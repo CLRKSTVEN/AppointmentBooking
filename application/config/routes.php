@@ -7,7 +7,6 @@ $route['login']          = 'login';
 $route['login/auth']     = 'login/auth';
 $route['logout']         = 'login/logout';
 $route['dashboard']      = 'login/dashboard';
-$route['dashboard/log']  = 'login/accomplishments';
 
 $route['register']       = 'login/register';        // show registration form
 $route['register/save']  = 'login/register_save';  // handle registration POST
