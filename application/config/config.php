@@ -1,7 +1,11 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-$config['base_url'] = 'http://localhost/office_tracker/';
+/**
+ * Base URL for the Appointment Booking app.
+ * Adjust if you are running under a different host or folder.
+ */
+$config['base_url'] = 'http://localhost/AppointmentBooking/';
 $config['enable_hooks'] = TRUE;
 $config['maintenance_mode'] = False;
 
