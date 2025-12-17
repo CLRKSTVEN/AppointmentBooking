@@ -60,22 +60,39 @@
                                                 </select>
                                             </div>
                                             <div class="form-group col-md-6">
-                                                <label for="location">Location</label>
-                                                <select id="location" name="location" class="form-control" required>
-                                                    <option value="">Select room/location</option>
-                                                    <?php if (!empty($appointment_rooms)): ?>
-                                                        <?php foreach ($appointment_rooms as $room): ?>
-                                                            <option value="<?= htmlentities($room->name); ?>"><?= htmlentities($room->name); ?></option>
-                                                        <?php endforeach; ?>
-                                                    <?php endif; ?>
-                                                </select>
-                                            </div>
+                                            <label for="location">Location</label>
+                                            <select id="location" name="location" class="form-control" required>
+                                                <option value="">Select room/location</option>
+                                                <?php if (!empty($appointment_rooms)): ?>
+                                                    <?php foreach ($appointment_rooms as $room): ?>
+                                                        <option value="<?= htmlentities($room->name); ?>"><?= htmlentities($room->name); ?></option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            </select>
                                         </div>
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6">
-                                                <label for="start_date">Start date</label>
-                                                <input type="date" id="start_date" name="start_date" class="form-control" required>
-                                            </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="doctor">Preferred doctor</label>
+                                            <select id="doctor" name="doctor" class="form-control">
+                                                <option value="">Any available</option>
+                                                <?php if (!empty($doctors)): ?>
+                                                    <?php foreach ($doctors as $doc): ?>
+                                                        <option value="<?= htmlentities($doc->name); ?>"><?= htmlentities($doc->name); ?><?= $doc->specialty ? ' — ' . htmlentities($doc->specialty) : ''; ?></option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="insurance_provider">Insurance provider</label>
+                                            <input type="text" id="insurance_provider" name="insurance_provider" class="form-control" placeholder="e.g., PhilHealth / private">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="start_date">Start date</label>
+                                            <input type="date" id="start_date" name="start_date" class="form-control" required>
+                                        </div>
                                             <div class="form-group col-md-6">
                                                 <label for="end_date">End date</label>
                                                 <input type="date" id="end_date" name="end_date" class="form-control">
@@ -90,16 +107,12 @@
                                             <textarea id="symptoms" name="symptoms" class="form-control" rows="2" required placeholder="Briefly describe symptoms or reason"></textarea>
                                         </div>
                                         <div class="form-group">
-                                            <label for="doctor">Preferred doctor</label>
-                                            <input type="text" id="doctor" name="doctor" class="form-control" placeholder="e.g., Dr. Santos">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="insurance_provider">Insurance provider</label>
-                                            <input type="text" id="insurance_provider" name="insurance_provider" class="form-control" placeholder="e.g., PhilHealth / private">
-                                        </div>
-                                        <div class="form-group">
                                             <label for="payment_reference">Receipt / reference (optional)</label>
                                             <input type="text" id="payment_reference" name="payment_reference" class="form-control" placeholder="Receipt or insurance reference">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="attachment">Upload referral/receipt (PDF/JPG/PNG)</label>
+                                            <input type="file" id="attachment" name="attachment" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
                                         </div>
                                         <div class="form-group">
                                             <label for="is_public">Visibility</label>
@@ -225,6 +238,12 @@
                                                             <?php endif; ?>
                                                             <?php if (!empty($row->insurance_provider)): ?>
                                                                 <span class="text-muted small">Insurance: <?= htmlentities($row->insurance_provider); ?></span><br>
+                                                            <?php endif; ?>
+                                                            <?php if (!empty($row->payment_reference)): ?>
+                                                                <span class="text-muted small">Receipt: <?= htmlentities($row->payment_reference); ?></span><br>
+                                                            <?php endif; ?>
+                                                            <?php if (!empty($row->attachment)): ?>
+                                                                <span class="text-muted small"><a href="<?= base_url('upload/appointments/' . $row->attachment); ?>" target="_blank">View attachment</a></span><br>
                                                             <?php endif; ?>
                                                             <span class="text-muted small"><?= htmlentities($row->description ?? ''); ?></span>
                                                         </div>

@@ -18,6 +18,18 @@ class Accomplishment_model extends CI_Model
             ->count_all_results();
     }
 
+    public function has_conflict(?string $date, ?string $location): bool
+    {
+        if (empty($date) || empty($location)) {
+            return false;
+        }
+        return $this->db
+            ->where('start_date', $date)
+            ->where('location', $location)
+            ->where_not_in('status', ['declined', 'completed'])
+            ->count_all_results($this->table) > 0;
+    }
+
     public function count_for_staff(int $staffId): int
     {
         if ($staffId <= 0) {

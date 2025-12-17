@@ -133,6 +133,33 @@ class Login extends CI_Controller
 
         $startDate = $this->input->post('start_date', TRUE);
         $endDate   = $this->input->post('end_date', TRUE);
+        // Availability check: prevent double booking same location + date if not declined
+        if ($this->Accomplishment_model->has_conflict($startDate, $this->input->post('location', TRUE))) {
+            $this->session->set_flashdata('error', 'Selected slot/location is already booked. Please choose another date/location.');
+            return redirect('dashboard/log');
+        }
+
+        $attachmentName = null;
+        if (!empty($_FILES['attachment']['name'])) {
+            $uploadDir = FCPATH . 'upload/appointments/';
+            if (!is_dir($uploadDir)) {
+                @mkdir($uploadDir, 0755, true);
+            }
+            $ext = pathinfo($_FILES['attachment']['name'], PATHINFO_EXTENSION);
+            $safeName = 'appt_' . time() . '_' . mt_rand(1000, 9999) . '.' . strtolower($ext);
+            $target = $uploadDir . $safeName;
+            $allowed = ['pdf', 'jpg', 'jpeg', 'png'];
+            if (!in_array(strtolower($ext), $allowed)) {
+                $this->session->set_flashdata('error', 'Invalid attachment type. Allowed: PDF/JPG/PNG.');
+                return redirect('dashboard/log');
+            }
+            if (!move_uploaded_file($_FILES['attachment']['tmp_name'], $target)) {
+                $this->session->set_flashdata('error', 'Failed to upload attachment.');
+                return redirect('dashboard/log');
+            }
+            $attachmentName = $safeName;
+        }
+
         $payload = [
             'staff_id'   => $staffId,
             'title'      => $this->input->post('title', TRUE),
@@ -147,6 +174,9 @@ class Login extends CI_Controller
             'end_date'   => $endDate !== '' ? $endDate : null,
             'is_public'  => (int)$this->input->post('is_public', TRUE),
         ];
+        if ($attachmentName) {
+            $payload['attachment'] = $attachmentName;
+        }
 
         $this->Accomplishment_model->create($payload);
         $this->session->set_flashdata('success', 'Accomplishment saved.');
@@ -588,6 +618,9 @@ class Login extends CI_Controller
         $appointmentRooms = $this->db->table_exists('appointment_rooms')
             ? $this->db->get_where('appointment_rooms', ['is_active' => 1])->result()
             : [];
+        $doctors = $this->db->table_exists('doctors')
+            ? $this->db->get_where('doctors', ['is_active' => 1])->result()
+            : [];
 
         if ($overviewNav === null) {
             $overviewNav = $this->_is_admin()
@@ -612,6 +645,7 @@ class Login extends CI_Controller
             'is_staff' => $isStaff,
             'is_client' => $isClient,
             'current_staff_id' => $staffId,
+            'doctors' => $doctors,
         ];
     }
 
