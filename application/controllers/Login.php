@@ -123,57 +123,29 @@ class Login extends CI_Controller
         $this->form_validation->set_rules('start_date', 'Start Date', 'required|trim');
         $this->form_validation->set_rules('is_public', 'Visibility', 'integer');
 
-
-        // Integrate Strategy Pattern for appointment validation
-        require_once(APPPATH . 'design_patterns/ValidationStrategy.php');
-        $validator = new \AppointmentValidator(new \PatientValidation());
-        $data = [
-            'patient_id' => $staffId // Example: using staffId as patient_id for demo
-        ];
-        if (!$validator->validate($data)) {
-            $this->session->set_flashdata('error', 'Invalid patient data.');
-            return redirect('dashboard/log');
-        }
-
         if ($this->form_validation->run() === FALSE) {
             $this->session->set_flashdata('error', validation_errors('', ''));
             return redirect('dashboard/log');
         }
 
-        // Integrate Factory Pattern for appointment creation
-        require_once(APPPATH . 'design_patterns/AppointmentFactory.php');
-        $type = 'patient'; // Default to patient, you can adjust logic as needed
-        $appointment = \AppointmentFactory::create($type);
-        $appointment->schedule(); // This could be extended to do more
-
-        $startDate = $this->input->post('start_date', TRUE);
-        $endDate   = $this->input->post('end_date', TRUE);
-        $payload = [
-            'staff_id'   => $staffId,
+        // Use Facade Pattern for booking
+        require_once(APPPATH . 'design_patterns/AppointmentFacade.php');
+        $input = [
             'title'      => $this->input->post('title', TRUE),
             'category'   => $this->input->post('category', TRUE),
             'location'   => $this->input->post('location', TRUE),
             'description'=> $this->input->post('description', TRUE),
-            'start_date' => $startDate !== '' ? $startDate : null,
-            'end_date'   => $endDate !== '' ? $endDate : null,
+            'start_date' => $this->input->post('start_date', TRUE),
+            'end_date'   => $this->input->post('end_date', TRUE),
             'is_public'  => (int)$this->input->post('is_public', TRUE),
         ];
-
-        $this->Accomplishment_model->create($payload);
-
-        // Integrate Observer Pattern for notifications
-        require_once(APPPATH . 'design_patterns/AppointmentObserver.php');
-        $subject = new \HospitalAppointmentSubject();
-        $subject->attach(new \PatientNotifier());
-        $subject->attach(new \DoctorNotifier());
-        $subject->notify('A new appointment has been booked.');
-
-        // Integrate Adapter Pattern for email notifications
-        require_once(APPPATH . 'design_patterns/EmailAdapter.php');
-        $emailSender = new \EmailSender(new \PHPMailerAdapter());
-        $emailSender->sendEmail('staff@example.com', 'New Appointment', 'A new appointment has been booked.');
-
-        $this->session->set_flashdata('success', 'Accomplishment saved.');
+        $result = \AppointmentFacade::bookAppointment($staffId, $input);
+        if ($result['success']) {
+            $this->Accomplishment_model->create(array_merge(['staff_id' => $staffId], $input));
+            $this->session->set_flashdata('success', $result['message']);
+        } else {
+            $this->session->set_flashdata('error', $result['message']);
+        }
         redirect('dashboard/log');
     }
 
