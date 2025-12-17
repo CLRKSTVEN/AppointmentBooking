@@ -14,8 +14,9 @@
 
                     <div class="row mt-3">
                         <div class="col-sm-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Online Appointment Booking — Admin Dashboard</h4>
+                            <div class="page-title-box d-flex justify-content-between align-items-center">
+                                <h4 class="page-title mb-0">Online Appointment Booking — Admin Dashboard</h4>
+                                <span id="ph-time-api" class="ml-3 font-weight-bold text-primary" style="font-size:1.1em;"></span>
                             </div>
                         </div>
                     </div>

@@ -25,6 +25,7 @@
                                     <span class="badge badge-<?= $is_admin ? 'danger' : ($is_staff ? 'info' : 'primary'); ?> mt-2">
                                         <?= $is_admin ? 'Admin' : ($is_staff ? 'Staff' : 'Client'); ?> mode
                                     </span>
+                                    <span id="ph-time-api" class="ml-3 font-weight-bold text-primary" style="font-size:1.1em;"></span>
                                 </div>
                                 <?php if (!empty($overview_nav)): ?>
                                     <div>

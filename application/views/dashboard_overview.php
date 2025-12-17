@@ -14,11 +14,14 @@
 
                     <div class="row mt-3">
                         <div class="col-sm-12">
-                            <div class="page-title-box">
-                                <h4 class="page-title">Online Appointment Booking — My Dashboard</h4>
-                                <span class="badge badge-<?= !empty($is_admin) ? 'danger' : (!empty($is_staff) ? 'info' : 'primary'); ?>">
-                                    <?= !empty($is_admin) ? 'Admin' : (!empty($is_staff) ? 'Staff' : 'Client'); ?>
-                                </span>
+                            <div class="page-title-box d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 class="page-title mb-0">Online Appointment Booking — My Dashboard</h4>
+                                    <span class="badge badge-<?= !empty($is_admin) ? 'danger' : (!empty($is_staff) ? 'info' : 'primary'); ?>">
+                                        <?= !empty($is_admin) ? 'Admin' : (!empty($is_staff) ? 'Staff' : 'Client'); ?>
+                                    </span>
+                                </div>
+                                <span id="ph-time-api" class="ml-3 font-weight-bold text-primary" style="font-size:1.1em;"></span>
                             </div>
                         </div>
                     </div>
