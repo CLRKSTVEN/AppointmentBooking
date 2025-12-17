@@ -52,6 +52,7 @@
                            </div>
                        </li>
 
+                       <?php include(APPPATH . 'views/includes/appointment_bell.php'); ?>
                        <?php include(APPPATH . 'views/includes/req_bell.php'); ?>
                    <?php endif; ?>
                    <li class="dropdown notification-list">
