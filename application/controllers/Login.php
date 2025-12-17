@@ -219,6 +219,7 @@ class Login extends CI_Controller
 
         // Load offices + addresses (province/city/brgy) for dropdowns
         $data['offices']  = $this->db->get('offices')->result();
+        $data['positions'] = $this->_position_options();
         $addrRows = $this->db->get('address')->result();
 
         $provinces = [];
@@ -251,6 +252,85 @@ class Login extends CI_Controller
     }
 
     /**
+     * Public registration (renders form and handles POST signup)
+     */
+    public function registration()
+    {
+        $recaptcha = $this->_recaptcha_config();
+        $data = [
+            'recaptcha_site_key' => $recaptcha['site_key'],
+        ];
+
+        if ($this->input->method() === 'post' && $this->input->post('register')) {
+            $this->form_validation->set_rules('fName', 'First Name', 'required|trim');
+            $this->form_validation->set_rules('mName', 'Middle Name', 'trim');
+            $this->form_validation->set_rules('lName', 'Last Name', 'required|trim');
+            $this->form_validation->set_rules('empEmail', 'Email', 'required|trim|valid_email|is_unique[users.username]');
+            $this->form_validation->set_rules('password', 'Password', 'required|min_length[8]');
+
+            $recaptchaSecret = $recaptcha['secret_key'] ?? '';
+            $recaptchaResponse = $this->input->post('g-recaptcha-response');
+            if ($recaptchaSecret !== '') {
+                if (!$this->_verify_recaptcha($recaptchaSecret, $recaptchaResponse)) {
+                    $this->session->set_flashdata('msg', 'reCAPTCHA validation failed. Please try again.');
+                    return redirect('login/registration');
+                }
+            }
+
+            if ($this->form_validation->run() === FALSE) {
+                $this->session->set_flashdata('msg', validation_errors());
+                return redirect('login/registration');
+            }
+
+            $first = $this->input->post('fName', TRUE);
+            $middle = $this->input->post('mName', TRUE);
+            $last = $this->input->post('lName', TRUE);
+            $email = $this->input->post('empEmail', TRUE);
+            $password = (string)$this->input->post('password', TRUE);
+
+            $this->db->trans_start();
+
+            // Create staff profile with minimal info
+            $this->db->insert('staff', [
+                'first_name'     => $first,
+                'middle_name'    => $middle,
+                'last_name'      => $last,
+                'position_title' => null,
+                'office_id'      => null,
+                'address_id'     => null,
+                'photo'          => null,
+                'short_bio'      => null,
+                'is_active'      => 1,
+                'is_public'      => 1,
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+            $staffId = $this->db->insert_id();
+
+            // Create user tied to staff
+            $this->db->insert('users', [
+                'staff_id'      => $staffId,
+                'username'      => $email, // email used as username
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                'role'          => 'staff',
+                'status'        => 1,
+                'created_at'    => date('Y-m-d H:i:s'),
+            ]);
+
+            $this->db->trans_complete();
+
+            if ($this->db->trans_status() === FALSE) {
+                $this->session->set_flashdata('msg', 'Registration failed. Please try again.');
+                return redirect('login/registration');
+            }
+
+            $this->session->set_flashdata('message', 'Account created. You may now sign in using your email and password.');
+            return redirect('login');
+        }
+
+        $this->load->view('registration_form', $data);
+    }
+
+    /**
      * Handle staff registration POST.
      * Creates record in staff + users (role=staff).
      */
@@ -274,6 +354,7 @@ class Login extends CI_Controller
         if ($this->form_validation->run() === FALSE) {
             // Reload form with errors
             $data['offices']   = $this->db->get('offices')->result();
+            $data['positions'] = $this->_position_options();
             $addrRows = $this->db->get('address')->result();
             $provinces = [];
             $citiesByProvince = [];
@@ -472,5 +553,98 @@ class Login extends CI_Controller
         if (!$this->session->userdata('logged_in')) {
             redirect('login');
         }
+    }
+
+    private function _position_options(): array
+    {
+        return [
+            'Administrator',
+            'Booking Officer',
+            'Receptionist',
+            'Doctor',
+            'Nurse',
+            'Counselor',
+            'Therapist',
+            'Support Staff',
+        ];
+    }
+
+    /**
+     * Resolve reCAPTCHA keys from config, then override from srms_settings/o_srms_settings if present.
+     */
+    private function _recaptcha_config(): array
+    {
+        $this->config->load('recaptcha');
+        $siteKey   = $this->config->item('recaptcha_site_key');
+        $secretKey = $this->config->item('recaptcha_secret_key');
+
+        // Prefer keys stored in srms_settings tables if available
+        $settingsTable = null;
+        if ($this->db->table_exists('srms_settings')) {
+            $settingsTable = 'srms_settings';
+        } elseif ($this->db->table_exists('o_srms_settings')) {
+            $settingsTable = 'o_srms_settings';
+        }
+
+        if ($settingsTable) {
+            $row = $this->db->limit(1)->get($settingsTable)->row();
+            if ($row) {
+                $siteCandidates = ['recaptcha_site_key', 'recaptcha_site', 'google_site_key', 'site_key'];
+                $secretCandidates = ['recaptcha_secret_key', 'google_secret_key', 'secret_key', 'sec_key'];
+
+                foreach ($siteCandidates as $col) {
+                    if (isset($row->$col) && trim((string)$row->$col) !== '') {
+                        $siteKey = trim((string)$row->$col);
+                        break;
+                    }
+                }
+                foreach ($secretCandidates as $col) {
+                    if (isset($row->$col) && trim((string)$row->$col) !== '') {
+                        $secretKey = trim((string)$row->$col);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return [
+            'site_key'   => $siteKey,
+            'secret_key' => $secretKey,
+        ];
+    }
+
+    /**
+     * Verify reCAPTCHA token with Google.
+     */
+    private function _verify_recaptcha(string $secret, ?string $response): bool
+    {
+        $token = trim((string) $response);
+        if ($secret === '' || $token === '') {
+            return false;
+        }
+
+        $payload = http_build_query([
+            'secret'   => $secret,
+            'response' => $token,
+            'remoteip' => $this->input->ip_address(),
+        ]);
+
+        $opts = [
+            'http' => [
+                'method'  => 'POST',
+                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                'content' => $payload,
+                'timeout' => 5,
+            ],
+        ];
+
+        $context = stream_context_create($opts);
+        $result = @file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+        if ($result === false) {
+            return false;
+        }
+
+        $json = json_decode($result, true);
+        return is_array($json) && !empty($json['success']);
     }
 }

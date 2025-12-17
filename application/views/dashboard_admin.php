@@ -16,7 +16,6 @@
                         <div class="col-sm-12">
                             <div class="page-title-box">
                                 <h4 class="page-title">Online Appointment Booking — Admin Dashboard</h4>
-                                <p class="text-muted mb-0">Overview of staff, offices, and appointments.</p>
                             </div>
                         </div>
                     </div>

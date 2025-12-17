@@ -17,7 +17,6 @@
                             <div class="page-title-box d-flex justify-content-between align-items-center">
                                 <div>
                                     <h4 class="page-title mb-0">Register staff</h4>
-                                    <p class="text-muted mb-0">Create a new account for the appointment booking system.</p>
                                 </div>
                                 <a class="btn btn-outline-primary btn-sm" href="<?= site_url('dashboard'); ?>">&larr; Back to dashboard</a>
                             </div>
@@ -29,6 +28,7 @@
                             <div class="card-box">
                                 <h5 class="mb-3">Account details</h5>
                                 <form action="<?= site_url('register/save'); ?>" method="post" id="registerForm">
+                                    <?php $selectedPosition = set_value('position_title'); ?>
                                     <div class="form-row">
                                         <div class="form-group col-md-4">
                                             <label for="first_name">First name</label>
@@ -51,7 +51,16 @@
                                         </div>
                                         <div class="form-group col-md-4">
                                             <label for="position_title">Position / role</label>
-                                            <input id="position_title" name="position_title" class="form-control" required>
+                                            <select id="position_title" name="position_title" class="form-control" required>
+                                                <option value="">Select position</option>
+                                                <?php if (!empty($positions)): ?>
+                                                    <?php foreach ($positions as $pos): ?>
+                                                        <option value="<?= htmlentities($pos); ?>" <?= ($selectedPosition === $pos) ? 'selected' : ''; ?>>
+                                                            <?= htmlentities($pos); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            </select>
                                         </div>
                                         <div class="form-group col-md-4">
                                             <label for="office_id">Office</label>

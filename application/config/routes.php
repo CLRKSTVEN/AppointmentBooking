@@ -17,6 +17,7 @@ $route['register']       = 'login/register';        // show registration form
 $route['register/save']  = 'login/register_save';  // handle registration POST
 
 $route['directory/profile/(:num)'] = 'staffdirectory/profile/$1';
+$route['login/registration'] = 'login/registration';
 
 $route['404_override']        = '';
 $route['translate_uri_dashes'] = FALSE;
