@@ -302,7 +302,7 @@ class Login extends CI_Controller
      */
     public function registration()
     {
-        $recaptcha = $this->_recaptcha_config();
+        $recaptchaAdapter = $this->_recaptcha_adapter();
         $addrRows = $this->db->get('address')->result();
 
         $provinces = [];
@@ -327,7 +327,7 @@ class Login extends CI_Controller
         }
 
         $data = [
-            'recaptcha_site_key' => $recaptcha['site_key'],
+            'recaptcha_site_key' => $recaptchaAdapter ? $recaptchaAdapter->getSiteKey() : '',
             'provinces' => array_keys($provinces),
             'citiesByProvince' => $citiesByProvince,
             'barangayByCity' => $barangayByCity,
@@ -341,13 +341,10 @@ class Login extends CI_Controller
             $this->form_validation->set_rules('password', 'Password', 'required|min_length[8]');
             $this->form_validation->set_rules('address_id', 'Address', 'required|integer');
 
-            $recaptchaSecret = $recaptcha['secret_key'] ?? '';
             $recaptchaResponse = $this->input->post('g-recaptcha-response');
-            if ($recaptchaSecret !== '') {
-                if (!$this->_verify_recaptcha($recaptchaSecret, $recaptchaResponse)) {
-                    $this->session->set_flashdata('msg', 'reCAPTCHA validation failed. Please try again.');
-                    return redirect('login/registration');
-                }
+            if ($recaptchaAdapter && !$recaptchaAdapter->verify($recaptchaResponse, $this->input->ip_address())) {
+                $this->session->set_flashdata('msg', 'reCAPTCHA validation failed. Please try again.');
+                return redirect('login/registration');
             }
 
             if ($this->form_validation->run() === FALSE) {
@@ -686,6 +683,23 @@ class Login extends CI_Controller
             'Therapist',
             'Support Staff',
         ];
+    }
+
+    /**
+     * Build the reCAPTCHA adapter using configured keys.
+     */
+    private function _recaptcha_adapter(): ?RecaptchaAdapter
+    {
+        $recaptcha = $this->_recaptcha_config();
+        $siteKey = trim((string) ($recaptcha['site_key'] ?? ''));
+        $secretKey = trim((string) ($recaptcha['secret_key'] ?? ''));
+
+        if ($siteKey === '' || $secretKey === '') {
+            return null;
+        }
+
+        require_once(APPPATH . 'design_patterns/RecaptchaAdapter.php');
+        return new RecaptchaAdapter($siteKey, $secretKey);
     }
 
     /**
