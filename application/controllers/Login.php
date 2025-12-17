@@ -121,6 +121,9 @@ class Login extends CI_Controller
 
         $this->form_validation->set_rules('title', 'Title', 'required|trim');
         $this->form_validation->set_rules('start_date', 'Start Date', 'required|trim');
+        $this->form_validation->set_rules('symptoms', 'Symptoms/Reason', 'required|trim');
+        $this->form_validation->set_rules('doctor', 'Preferred doctor', 'trim');
+        $this->form_validation->set_rules('insurance_provider', 'Insurance provider', 'trim');
         $this->form_validation->set_rules('is_public', 'Visibility', 'integer');
 
         if ($this->form_validation->run() === FALSE) {
@@ -128,24 +131,21 @@ class Login extends CI_Controller
             return redirect('dashboard/log');
         }
 
-        // Use Facade Pattern for booking
-        require_once(APPPATH . 'design_patterns/AppointmentFacade.php');
-        $input = [
+        $startDate = $this->input->post('start_date', TRUE);
+        $endDate   = $this->input->post('end_date', TRUE);
+        $payload = [
+            'staff_id'   => $staffId,
             'title'      => $this->input->post('title', TRUE),
             'category'   => $this->input->post('category', TRUE),
             'location'   => $this->input->post('location', TRUE),
             'description'=> $this->input->post('description', TRUE),
-            'start_date' => $this->input->post('start_date', TRUE),
-            'end_date'   => $this->input->post('end_date', TRUE),
+            'start_date' => $startDate !== '' ? $startDate : null,
+            'end_date'   => $endDate !== '' ? $endDate : null,
             'is_public'  => (int)$this->input->post('is_public', TRUE),
         ];
-        $result = \AppointmentFacade::bookAppointment($staffId, $input);
-        if ($result['success']) {
-            $this->Accomplishment_model->create(array_merge(['staff_id' => $staffId], $input));
-            $this->session->set_flashdata('success', $result['message']);
-        } else {
-            $this->session->set_flashdata('error', $result['message']);
-        }
+
+        $this->Accomplishment_model->create($payload);
+        $this->session->set_flashdata('success', 'Accomplishment saved.');
         redirect('dashboard/log');
     }
 
@@ -164,6 +164,9 @@ class Login extends CI_Controller
         $this->form_validation->set_rules('id', 'Accomplishment', 'required|integer|greater_than[0]');
         $this->form_validation->set_rules('title', 'Title', 'required|trim');
         $this->form_validation->set_rules('start_date', 'Start Date', 'required|trim');
+        $this->form_validation->set_rules('symptoms', 'Symptoms/Reason', 'required|trim');
+        $this->form_validation->set_rules('doctor', 'Preferred doctor', 'trim');
+        $this->form_validation->set_rules('insurance_provider', 'Insurance provider', 'trim');
 
         if ($this->form_validation->run() === FALSE) {
             $this->session->set_flashdata('error', validation_errors('', ''));
@@ -184,6 +187,10 @@ class Login extends CI_Controller
             'category'   => $this->input->post('category', TRUE),
             'location'   => $this->input->post('location', TRUE),
             'description'=> $this->input->post('description', TRUE),
+            'symptoms'   => $this->input->post('symptoms', TRUE),
+            'payment_reference' => $this->input->post('payment_reference', TRUE),
+            'doctor'     => $this->input->post('doctor', TRUE),
+            'insurance_provider' => $this->input->post('insurance_provider', TRUE),
             'start_date' => $startDate !== '' ? $startDate : null,
             'end_date'   => $endDate !== '' ? $endDate : null,
             'is_public'  => (int)$this->input->post('is_public', TRUE),
@@ -570,6 +577,9 @@ class Login extends CI_Controller
         $appointmentRooms = $this->db->table_exists('appointment_rooms')
             ? $this->db->get_where('appointment_rooms', ['is_active' => 1])->result()
             : [];
+        $doctors = $this->db->table_exists('doctors')
+            ? $this->db->get_where('doctors', ['is_active' => 1])->result()
+            : [];
 
         if ($overviewNav === null) {
             $overviewNav = $this->_is_admin()
@@ -594,26 +604,38 @@ class Login extends CI_Controller
             'is_staff' => $isStaff,
             'is_client' => $isClient,
             'current_staff_id' => $staffId,
+            'doctors' => $doctors,
         ];
     }
 
     private function _staff_overview_data()
     {
         $staffId = (int) $this->session->userdata('staff_id');
-        $hasStaffProfile = $staffId > 0;
-        $accomplishments = $hasStaffProfile
-            ? $this->Accomplishment_model->recent_for_staff($staffId, 10)
-            : [];
+        $role = strtolower((string)$this->session->userdata('role'));
+        $isStaff = ($role === 'staff');
+        $isClient = ($role === 'client');
+        $isAdmin = $this->_is_admin();
 
-        $stats = [
-            'total_staff'           => $this->Staff_model->count_active(),
-            'total_offices'         => $this->Office_model->count_all(),
-            'total_accomplishments' => $hasStaffProfile ? $this->Accomplishment_model->count_for_staff($staffId) : 0,
-            'public_accomplishments'=> $hasStaffProfile ? $this->Accomplishment_model->count_public_for_staff($staffId) : 0,
-        ];
+        $hasStaffProfile = $staffId > 0;
+        if ($isStaff || $isAdmin) {
+            $accomplishments = $this->Accomplishment_model->recent_all_with_staff(10);
+            $stats = [
+                'total_appointments'  => $this->Accomplishment_model->count_all(),
+                'pending'             => $this->Accomplishment_model->count_by_status('pending'),
+                'accepted'            => $this->Accomplishment_model->count_by_status('accepted'),
+            ];
+        } else {
+            $accomplishments = $hasStaffProfile
+                ? $this->Accomplishment_model->recent_for_staff($staffId, 10)
+                : [];
+            $stats = [
+                'total_accomplishments' => $hasStaffProfile ? $this->Accomplishment_model->count_for_staff($staffId) : 0,
+                'public_accomplishments'=> $hasStaffProfile ? $this->Accomplishment_model->count_public_for_staff($staffId) : 0,
+            ];
+        }
 
         $dashboardNav = [
-            ['label' => 'Log accomplishments', 'target' => site_url('dashboard/log')],
+            ['label' => 'Log appointments', 'target' => site_url('dashboard/log')],
         ];
 
         return [
@@ -621,6 +643,9 @@ class Login extends CI_Controller
             'stats'         => $stats,
             'accomplishments' => $accomplishments,
             'has_staff_profile' => $hasStaffProfile,
+            'is_staff' => $isStaff,
+            'is_client' => $isClient,
+            'is_admin' => $isAdmin,
         ];
     }
 

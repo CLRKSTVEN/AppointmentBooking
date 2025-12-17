@@ -10,6 +10,26 @@ class Accomplishment_model extends CI_Model
         return (int) $this->db->from($this->table)->count_all_results();
     }
 
+    public function count_by_status(string $status): int
+    {
+        return (int) $this->db
+            ->where('status', $status)
+            ->from($this->table)
+            ->count_all_results();
+    }
+
+    public function has_conflict(?string $date, ?string $location): bool
+    {
+        if (empty($date) || empty($location)) {
+            return false;
+        }
+        return $this->db
+            ->where('start_date', $date)
+            ->where('location', $location)
+            ->where_not_in('status', ['declined', 'completed'])
+            ->count_all_results($this->table) > 0;
+    }
+
     public function count_for_staff(int $staffId): int
     {
         if ($staffId <= 0) {
@@ -71,6 +91,18 @@ class Accomplishment_model extends CI_Model
             ->where('staff_id', $staffId)
             ->order_by('start_date', 'DESC')
             ->get($this->table)
+            ->result();
+    }
+
+    public function recent_all_with_staff(int $limit = 10): array
+    {
+        return $this->db
+            ->select('a.*, s.first_name, s.last_name')
+            ->from($this->table . ' a')
+            ->join('staff s', 's.staff_id = a.staff_id', 'left')
+            ->order_by('a.created_at', 'DESC')
+            ->limit($limit)
+            ->get()
             ->result();
     }
 

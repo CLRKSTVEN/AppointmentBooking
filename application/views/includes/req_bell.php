@@ -1,5 +1,5 @@
 <?php if ($this->session->userdata('level') !== 'Student'): ?>
-  <li class="dropdown notification-list req-bell"
+  <!-- <li class="dropdown notification-list req-bell"
     data-count-url="<?= site_url('request/ajax_pending_count'); ?>"
     data-list-url="<?= site_url('request/ajax_pending_list'); ?>"
     data-markseen-url="<?= site_url('request/ajax_mark_seen'); ?>"
@@ -20,5 +20,5 @@
         <div class="req-list"></div>
       </div>
     </div>
-  </li>
+  </li> -->
 <?php endif; ?>
