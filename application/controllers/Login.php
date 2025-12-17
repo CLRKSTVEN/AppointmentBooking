@@ -345,7 +345,7 @@ class Login extends CI_Controller
                 'staff_id'      => $staffId,
                 'username'      => $email, // email used as username
                 'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-                'role'          => 'staff',
+                'role'          => 'client',
                 'status'        => 1,
                 'created_at'    => date('Y-m-d H:i:s'),
             ]);
@@ -511,8 +511,9 @@ class Login extends CI_Controller
     private function _staff_dashboard_data(?array $overviewNav = null)
     {
         $staffId = (int) $this->session->userdata('staff_id');
+        $isAdmin = $this->_is_admin();
 
-        $accomplishments = $staffId > 0
+        $accomplishments = ($staffId > 0 && !$isAdmin)
             ? $this->Accomplishment_model->get_for_staff($staffId)
             : [];
 
@@ -547,6 +548,8 @@ class Login extends CI_Controller
             'addresses' => $addresses,
             'appointment_types' => $appointmentTypes,
             'appointment_rooms' => $appointmentRooms,
+            'is_admin' => $isAdmin,
+            'all_appointments' => $isAdmin ? $this->Accomplishment_model->all_with_staff() : [],
         ];
     }
 

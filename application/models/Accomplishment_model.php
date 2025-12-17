@@ -38,9 +38,12 @@ class Accomplishment_model extends CI_Model
     public function recent(int $limit = 5): array
     {
         return $this->db
-            ->order_by('created_at', 'DESC')
+            ->select('a.*, s.first_name, s.last_name')
+            ->from($this->table . ' a')
+            ->join('staff s', 's.staff_id = a.staff_id', 'left')
+            ->order_by('a.created_at', 'DESC')
             ->limit($limit)
-            ->get($this->table)
+            ->get()
             ->result();
     }
 
@@ -68,6 +71,17 @@ class Accomplishment_model extends CI_Model
             ->where('staff_id', $staffId)
             ->order_by('start_date', 'DESC')
             ->get($this->table)
+            ->result();
+    }
+
+    public function all_with_staff(): array
+    {
+        return $this->db
+            ->select('a.*, s.first_name, s.last_name')
+            ->from($this->table . ' a')
+            ->join('staff s', 's.staff_id = a.staff_id', 'left')
+            ->order_by('a.created_at', 'DESC')
+            ->get()
             ->result();
     }
 

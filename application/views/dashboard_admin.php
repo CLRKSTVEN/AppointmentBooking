@@ -86,6 +86,11 @@
                                                 <div class="text-muted small">
                                                     <?= htmlentities($row->category ?? 'General'); ?>
                                                     <?php if (!empty($row->start_date)): ?> · <?= htmlentities($row->start_date); ?><?php endif; ?>
+                                                    <?php
+                                                    $by = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+                                                    if ($by !== ''): ?>
+                                                        · by <?= htmlentities($by); ?>
+                                                    <?php endif; ?>
                                                 </div>
                                             </li>
                                         <?php endforeach; ?>
