@@ -21,32 +21,25 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-3 col-sm-6">
-                            <div class="card-box tilebox-one">
-                                <i class="bi bi-people float-right"></i>
-                                <h6 class="text-muted text-uppercase mt-0">Total staff</h6>
-                                <h3 class="my-1"><?= (int)($stats['total_staff'] ?? 0); ?></h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="card-box tilebox-one">
-                                <i class="bi bi-building float-right"></i>
-                                <h6 class="text-muted text-uppercase mt-0">Offices</h6>
-                                <h3 class="my-1"><?= (int)($stats['total_offices'] ?? 0); ?></h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-md-4 col-sm-6">
                             <div class="card-box tilebox-one">
                                 <i class="bi bi-calendar-check float-right"></i>
                                 <h6 class="text-muted text-uppercase mt-0">My appointments</h6>
                                 <h3 class="my-1"><?= (int)($stats['total_accomplishments'] ?? 0); ?></h3>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-md-4 col-sm-6">
                             <div class="card-box tilebox-one">
                                 <i class="bi bi-unlock float-right"></i>
                                 <h6 class="text-muted text-uppercase mt-0">Public appointments</h6>
                                 <h3 class="my-1"><?= (int)($stats['public_accomplishments'] ?? 0); ?></h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="card-box tilebox-one">
+                                <i class="bi bi-clock-history float-right"></i>
+                                <h6 class="text-muted text-uppercase mt-0">Latest update</h6>
+                                <h3 class="my-1"><?= !empty($accomplishments) ? htmlentities($accomplishments[0]->start_date ?? '—') : '—'; ?></h3>
                             </div>
                         </div>
                     </div>

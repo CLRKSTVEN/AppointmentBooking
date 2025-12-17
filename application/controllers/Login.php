@@ -521,6 +521,12 @@ class Login extends CI_Controller
             : [];
 
         $addresses = $this->db->get('settings_address')->result();
+        $appointmentTypes = $this->db->table_exists('appointment_types')
+            ? $this->db->get('appointment_types')->result()
+            : [];
+        $appointmentRooms = $this->db->table_exists('appointment_rooms')
+            ? $this->db->get_where('appointment_rooms', ['is_active' => 1])->result()
+            : [];
 
         if ($overviewNav === null) {
             $overviewNav = $this->_is_admin()
@@ -539,6 +545,8 @@ class Login extends CI_Controller
             'can_manage_accomplishments' => $staffId > 0,
             'overview_nav' => $overviewNav,
             'addresses' => $addresses,
+            'appointment_types' => $appointmentTypes,
+            'appointment_rooms' => $appointmentRooms,
         ];
     }
 

@@ -41,26 +41,26 @@
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group col-md-6">
-                                            <label for="category">Category</label>
-                                            <input id="category" name="category" class="form-control" list="category-options" placeholder="Dental / Advisory / Follow-up">
-                                            <?php if (!empty($accomplishment_categories)): ?>
-                                                <datalist id="category-options">
-                                                    <?php foreach ($accomplishment_categories as $cat): ?>
-                                                        <option value="<?= htmlentities($cat); ?>"></option>
+                                            <label for="category">Appointment type</label>
+                                            <select id="category" name="category" class="form-control" required>
+                                                <option value="">Select appointment type</option>
+                                                <?php if (!empty($appointment_types)): ?>
+                                                    <?php foreach ($appointment_types as $type): ?>
+                                                        <option value="<?= htmlentities($type->name); ?>"><?= htmlentities($type->name); ?></option>
                                                     <?php endforeach; ?>
-                                                </datalist>
-                                            <?php endif; ?>
+                                                <?php endif; ?>
+                                            </select>
                                         </div>
                                         <div class="form-group col-md-6">
                                             <label for="location">Location</label>
-                                            <input id="location" name="location" class="form-control" placeholder="Room 201 or Zoom" list="address-options">
-                                            <?php if (!empty($addresses)): ?>
-                                                <datalist id="address-options">
-                                                    <?php foreach ($addresses as $addr): ?>
-                                                        <option value="<?= htmlentities($addr->label ?? $addr->address_line ?? ''); ?>"></option>
+                                            <select id="location" name="location" class="form-control" required>
+                                                <option value="">Select room/location</option>
+                                                <?php if (!empty($appointment_rooms)): ?>
+                                                    <?php foreach ($appointment_rooms as $room): ?>
+                                                        <option value="<?= htmlentities($room->name); ?>"><?= htmlentities($room->name); ?></option>
                                                     <?php endforeach; ?>
-                                                </datalist>
-                                            <?php endif; ?>
+                                                <?php endif; ?>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="form-row">

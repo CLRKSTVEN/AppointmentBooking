@@ -69,6 +69,14 @@ CREATE TABLE IF NOT EXISTS accomplishments (
   FOREIGN KEY (staff_id) REFERENCES staff(staff_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Appointment types (for dropdown selection)
+CREATE TABLE IF NOT EXISTS appointment_types (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL UNIQUE,
+  description VARCHAR(255),
+  is_active TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB;
+
 -- Seed minimal data (change password_hash to your own hash if desired)
 INSERT IGNORE INTO offices (id, name, abbreviation) VALUES
   (1, 'Head Office', 'HQ'),
@@ -84,3 +92,14 @@ VALUES (1, 'ADM-001', 'System', 'Administrator', 'Admin', 1, 1);
 -- Password for admin user below is: admin123
 INSERT IGNORE INTO users (id, staff_id, username, password_hash, role, status)
 VALUES (1, 1, 'admin', '$2y$12$mT9QvbukCbZUKB.GV5PVL.Yy6EnezimGxCqtg1PppRSU/9uUnvESO', 'admin', 1);
+
+-- Seed appointment types
+INSERT IGNORE INTO appointment_types (id, name, description, is_active) VALUES
+  (1, 'Initial Consultation', 'First-time visit or intake discussion', 1),
+  (2, 'Follow-up Consultation', 'Review of ongoing case or plan', 1),
+  (3, 'Medical Check-up', 'Routine or preventive health check', 1),
+  (4, 'Vaccination', 'Immunization appointment', 1),
+  (5, 'Diagnostics / Labs', 'Laboratory or imaging request', 1),
+  (6, 'Financial Advisory', 'Billing, payment arrangement, or finance consult', 1),
+  (7, 'Customer Support', 'General service support session', 1),
+  (8, 'Training / Orientation', 'Onboarding, training, or briefing session', 1);

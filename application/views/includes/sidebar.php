@@ -8,13 +8,13 @@
         $navItems = $isAdmin
             ? [
                 ['route' => 'dashboard',      'label' => 'Dashboard overview', 'icon' => 'bi-speedometer2'],
-                ['route' => 'dashboard/log',  'label' => 'Accomplishments',    'icon' => 'bi-journal-plus'],
+                ['route' => 'dashboard/log',  'label' => 'Appointments',    'icon' => 'bi-journal-plus'],
                 ['route' => 'register',       'label' => 'Register staff',     'icon' => 'bi-person-plus'],
                 ['route' => 'login/registration', 'label' => 'Login form / registration', 'icon' => 'bi-ui-checks-grid'],
             ]
             : [
                 ['route' => 'dashboard',      'label' => 'My dashboard',       'icon' => 'bi-speedometer2'],
-                ['route' => 'dashboard/log',  'label' => 'My accomplishments', 'icon' => 'bi-journal-plus'],
+                ['route' => 'dashboard/log',  'label' => 'My appointments', 'icon' => 'bi-journal-plus'],
             ];
         ?>
 
