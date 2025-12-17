@@ -158,7 +158,7 @@
         <!-- Left image -->
         <div class="col-xl-5 col-lg-5 col-md-4 login-left-col">
           <img class="login-left-img w-100"
-            src="<?= base_url(); ?>assets/images/login/2.jpg"
+            src="<?= base_url(); ?>assets/images/login/2.png"
             alt="Login background">
         </div>
 
