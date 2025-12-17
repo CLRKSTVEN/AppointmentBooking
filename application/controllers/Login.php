@@ -257,8 +257,34 @@ class Login extends CI_Controller
     public function registration()
     {
         $recaptcha = $this->_recaptcha_config();
+        $addrRows = $this->db->get('address')->result();
+
+        $provinces = [];
+        $citiesByProvince = [];
+        $barangayByCity = [];
+
+        foreach ($addrRows as $row) {
+            $prov = trim((string) $row->Province);
+            $city = trim((string) $row->City);
+            $brgy = trim((string) $row->Brgy);
+
+            if ($prov === '' || $city === '' || $brgy === '') {
+                continue;
+            }
+
+            $provinces[$prov] = true;
+            $citiesByProvince[$prov][$city] = true;
+            $barangayByCity[$city][] = [
+                'id'   => (int) $row->AddID,
+                'name' => $brgy,
+            ];
+        }
+
         $data = [
             'recaptcha_site_key' => $recaptcha['site_key'],
+            'provinces' => array_keys($provinces),
+            'citiesByProvince' => $citiesByProvince,
+            'barangayByCity' => $barangayByCity,
         ];
 
         if ($this->input->method() === 'post' && $this->input->post('register')) {
@@ -267,6 +293,7 @@ class Login extends CI_Controller
             $this->form_validation->set_rules('lName', 'Last Name', 'required|trim');
             $this->form_validation->set_rules('empEmail', 'Email', 'required|trim|valid_email|is_unique[users.username]');
             $this->form_validation->set_rules('password', 'Password', 'required|min_length[8]');
+            $this->form_validation->set_rules('address_id', 'Address', 'required|integer');
 
             $recaptchaSecret = $recaptcha['secret_key'] ?? '';
             $recaptchaResponse = $this->input->post('g-recaptcha-response');
@@ -287,6 +314,13 @@ class Login extends CI_Controller
             $last = $this->input->post('lName', TRUE);
             $email = $this->input->post('empEmail', TRUE);
             $password = (string)$this->input->post('password', TRUE);
+            $addressId = (int)$this->input->post('address_id');
+
+            // Guard against missing/invalid address rows to avoid FK errors
+            if (!$this->_address_exists($addressId)) {
+                $this->session->set_flashdata('msg', 'Selected address is invalid. Please choose a province/city/barangay again.');
+                return redirect('login/registration');
+            }
 
             $this->db->trans_start();
 
@@ -297,7 +331,7 @@ class Login extends CI_Controller
                 'last_name'      => $last,
                 'position_title' => null,
                 'office_id'      => null,
-                'address_id'     => null,
+                'address_id'     => $addressId > 0 ? $addressId : null,
                 'photo'          => null,
                 'short_bio'      => null,
                 'is_active'      => 1,
@@ -646,5 +680,20 @@ class Login extends CI_Controller
 
         $json = json_decode($result, true);
         return is_array($json) && !empty($json['success']);
+    }
+
+    private function _address_exists(int $addressId): bool
+    {
+        if ($addressId <= 0) {
+            return false;
+        }
+        // Try the new address table first, fallback to legacy settings_address
+        if ($this->db->table_exists('address')) {
+            return $this->db->where('AddID', $addressId)->limit(1)->get('address')->num_rows() > 0;
+        }
+        if ($this->db->table_exists('settings_address')) {
+            return $this->db->where('id', $addressId)->limit(1)->get('settings_address')->num_rows() > 0;
+        }
+        return false;
     }
 }

@@ -188,7 +188,7 @@
 
               <!-- Logo -->
               <div class="login-brand">
-                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="Online Appointment Booking">
+                <img src="<?= base_url(); ?>assets/images/Attendance.png" alt="Online Appointment Booking">
               </div>
 
               <!-- Title + subtitle -->
@@ -256,10 +256,9 @@
                       type="text"
                       name="mName"
                       class="form-control"
-                      required
                       placeholder=" "
                       value="<?= set_value('mName'); ?>">
-                    <label>Middle Name</label>
+                    <label>Middle Name (optional)</label>
                   </div>
                 </div>
 
@@ -295,6 +294,44 @@
                 </div>
                 <!-- Email validation feedback -->
                 <div id="emailFeedback" class="small mb-2" style="display: none;"></div>
+
+                <!-- Province / City / Barangay -->
+                <div class="row-two-cols">
+                  <div class="form-floating-label">
+                    <span class="input-icon">
+                      <i class="mdi mdi-map-marker-outline"></i>
+                    </span>
+                    <select id="province" class="form-control" required>
+                      <option value="" disabled selected>Select province...</option>
+                      <?php if (!empty($provinces)): ?>
+                        <?php foreach ($provinces as $prov): ?>
+                          <option value="<?= htmlentities($prov); ?>"><?= htmlentities($prov); ?></option>
+                        <?php endforeach; ?>
+                      <?php endif; ?>
+                    </select>
+                    <label>Province</label>
+                  </div>
+
+                  <div class="form-floating-label">
+                    <span class="input-icon">
+                      <i class="mdi mdi-city"></i>
+                    </span>
+                    <select id="city" class="form-control" required disabled>
+                      <option value="" disabled selected>Select city...</option>
+                    </select>
+                    <label>City</label>
+                  </div>
+                </div>
+
+                <div class="form-floating-label">
+                  <span class="input-icon">
+                    <i class="mdi mdi-home-outline"></i>
+                  </span>
+                  <select id="barangay" name="address_id" class="form-control" required disabled>
+                    <option value="" disabled selected>Select barangay...</option>
+                  </select>
+                  <label>Barangay</label>
+                </div>
 
                 <!-- Password -->
                 <div class="form-floating-label">
@@ -354,36 +391,94 @@
     </div>
   </section>
 
-  <!-- JS -->
-  <script src="<?= base_url(); ?>assets/js/jquery-3.5.1.min.js"></script>
-  <script src="<?= base_url(); ?>assets/js/bootstrap/bootstrap.bundle.min.js"></script>
-  <script src="<?= base_url(); ?>assets/js/icons/feather-icon/feather.min.js"></script>
-  <script src="<?= base_url(); ?>assets/js/icons/feather-icon/feather-icon.js"></script>
-  <script src="<?= base_url(); ?>assets/js/config.js"></script>
-  <script src="<?= base_url(); ?>assets/js/script.js"></script>
+  <!-- Minimal JS (vanilla, no jQuery dependency) -->
 
   <script>
     // Show / hide password
-    $(document).on('click', '.toggle-password', function() {
-      var targetSelector = $(this).data('target');
-      var $input = $(targetSelector);
-      var $icon = $(this).find('i');
-
-      if ($input.attr('type') === 'password') {
-        $input.attr('type', 'text');
-        $icon.removeClass('mdi-eye-outline').addClass('mdi-eye-off-outline');
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.toggle-password')) return;
+      var toggle = e.target.closest('.toggle-password');
+      var targetSelector = toggle.getAttribute('data-target');
+      var input = document.querySelector(targetSelector);
+      var icon = toggle.querySelector('i');
+      if (!input) return;
+      if (input.getAttribute('type') === 'password') {
+        input.setAttribute('type', 'text');
+        icon.classList.remove('mdi-eye-outline');
+        icon.classList.add('mdi-eye-off-outline');
       } else {
-        $input.attr('type', 'password');
-        $icon.removeClass('mdi-eye-off-outline').addClass('mdi-eye-outline');
+        input.setAttribute('type', 'password');
+        icon.classList.remove('mdi-eye-off-outline');
+        icon.classList.add('mdi-eye-outline');
       }
     });
 
-    // Dismiss alerts
-    $(document).ready(function() {
-      $('.alert-dismissible .close').on('click', function() {
-        $(this).closest('.alert').fadeOut();
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.alert-dismissible .close').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var alert = btn.closest('.alert');
+          if (alert) alert.style.display = 'none';
+        });
       });
 
+      const citiesByProvince = <?= json_encode($citiesByProvince ?? []); ?>;
+      const barangayByCity = <?= json_encode($barangayByCity ?? []); ?>;
+      const provinceEl = document.getElementById('province');
+      const cityEl = document.getElementById('city');
+      const barangayEl = document.getElementById('barangay');
+
+      function resetSelect(el, placeholder) {
+        el.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = placeholder;
+        opt.disabled = true;
+        opt.selected = true;
+        el.appendChild(opt);
+      }
+
+      function populateCities(province) {
+        resetSelect(cityEl, 'Select city...');
+        resetSelect(barangayEl, 'Select barangay...');
+        cityEl.disabled = true;
+        barangayEl.disabled = true;
+        if (!province || !citiesByProvince[province]) return;
+        Object.keys(citiesByProvince[province]).sort().forEach(function(city) {
+          const opt = document.createElement('option');
+          opt.value = city;
+          opt.textContent = city;
+          cityEl.appendChild(opt);
+        });
+        cityEl.disabled = false;
+      }
+
+      function populateBarangays(city) {
+        resetSelect(barangayEl, 'Select barangay...');
+        barangayEl.disabled = true;
+        if (!city || !barangayByCity[city]) return;
+        barangayByCity[city].forEach(function(item) {
+          const opt = document.createElement('option');
+          opt.value = item.id;
+          opt.textContent = item.name;
+          barangayEl.appendChild(opt);
+        });
+        barangayEl.disabled = false;
+      }
+
+      provinceEl.addEventListener('change', function(e) {
+        populateCities(e.target.value);
+      });
+      cityEl.addEventListener('change', function(e) {
+        populateBarangays(e.target.value);
+      });
+
+      // Rehydrate if preselected after validation errors
+      if (provinceEl.value) {
+        populateCities(provinceEl.value);
+      }
+      if (cityEl.value) {
+        populateBarangays(cityEl.value);
+      }
     });
   </script>
 
