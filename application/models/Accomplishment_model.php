@@ -10,6 +10,14 @@ class Accomplishment_model extends CI_Model
         return (int) $this->db->from($this->table)->count_all_results();
     }
 
+    public function count_by_status(string $status): int
+    {
+        return (int) $this->db
+            ->where('status', $status)
+            ->from($this->table)
+            ->count_all_results();
+    }
+
     public function count_for_staff(int $staffId): int
     {
         if ($staffId <= 0) {
@@ -71,6 +79,18 @@ class Accomplishment_model extends CI_Model
             ->where('staff_id', $staffId)
             ->order_by('start_date', 'DESC')
             ->get($this->table)
+            ->result();
+    }
+
+    public function recent_all_with_staff(int $limit = 10): array
+    {
+        return $this->db
+            ->select('a.*, s.first_name, s.last_name')
+            ->from($this->table . ' a')
+            ->join('staff s', 's.staff_id = a.staff_id', 'left')
+            ->order_by('a.created_at', 'DESC')
+            ->limit($limit)
+            ->get()
             ->result();
     }
 
