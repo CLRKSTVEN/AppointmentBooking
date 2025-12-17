@@ -89,15 +89,35 @@
                             vertical-align: middle;
                         }
 
+                        .appointments-table th,
+                        .appointments-table td {
+                            padding: 14px 12px;
+                            font-size: 0.95rem;
+                            white-space: nowrap;
+                        }
+
+                        .btn-icon {
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 6px 8px;
+                            min-width: 36px;
+                        }
+
+                        .btn-icon i {
+                            font-size: 1.1rem;
+                            line-height: 1;
+                        }
+
                         .cell-ellipsis {
-                            max-width: 180px;
+                            max-width: 200px;
                             white-space: nowrap;
                             overflow: hidden;
                             text-overflow: ellipsis;
                         }
 
                         .cell-notes {
-                            max-width: 260px;
+                            max-width: 320px;
                             white-space: nowrap;
                             overflow: hidden;
                             text-overflow: ellipsis;
@@ -182,7 +202,7 @@
 
                                 <?php if ($is_admin || $is_staff): ?>
                                     <div class="table-responsive">
-                                        <table class="table table-striped table-bordered w-100" id="appointments-table">
+                                        <table class="table table-striped table-hover w-100 appointments-table">
                                             <thead>
                                                 <tr>
                                                     <th data-priority="1" class="cell-ellipsis">Title</th>
@@ -231,16 +251,22 @@
                                                         </td>
                                                         <td>
                                                             <?php if (($row->status ?? '') === 'pending'): ?>
-                                                                <form method="post" action="<?= site_url('dashboard/log/status'); ?>" style="display:inline;">
-                                                                    <input type="hidden" name="id" value="<?= (int)($row->id ?? 0); ?>">
-                                                                    <input type="hidden" name="status" value="accepted">
-                                                                    <button type="submit" class="btn btn-sm btn-success">Accept</button>
-                                                                </form>
-                                                                <form method="post" action="<?= site_url('dashboard/log/status'); ?>" style="display:inline;">
-                                                                    <input type="hidden" name="id" value="<?= (int)($row->id ?? 0); ?>">
-                                                                    <input type="hidden" name="status" value="declined">
-                                                                    <button type="submit" class="btn btn-sm btn-danger">Decline</button>
-                                                                </form>
+                                                                <div class="btn-group btn-group-sm" role="group">
+                                                                    <form method="post" action="<?= site_url('dashboard/log/status'); ?>" style="display:inline;">
+                                                                        <input type="hidden" name="id" value="<?= (int)($row->id ?? 0); ?>">
+                                                                        <input type="hidden" name="status" value="accepted">
+                                                                        <button type="submit" class="btn btn-outline-success btn-icon" title="Accept" data-toggle="tooltip">
+                                                                            <i class="mdi mdi-check"></i>
+                                                                        </button>
+                                                                    </form>
+                                                                    <form method="post" action="<?= site_url('dashboard/log/status'); ?>" style="display:inline;">
+                                                                        <input type="hidden" name="id" value="<?= (int)($row->id ?? 0); ?>">
+                                                                        <input type="hidden" name="status" value="declined">
+                                                                        <button type="submit" class="btn btn-outline-danger btn-icon" title="Decline" data-toggle="tooltip">
+                                                                            <i class="mdi mdi-close"></i>
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
                                                             <?php else: ?>
                                                                 <small>Processed<?= !empty($row->processor_first) ? ' by ' . htmlentities(($row->processor_first ?? '') . ' ' . ($row->processor_last ?? '')) : ''; ?></small>
                                                             <?php endif; ?>
@@ -252,7 +278,7 @@
                                     </div>
                                 <?php else: ?>
                                     <div class="table-responsive">
-                                        <table class="table table-striped table-bordered w-100" id="client-appointments-table">
+                                        <table class="table table-striped table-hover w-100 appointments-table">
                                             <thead>
                                                 <tr>
                                                     <th class="cell-ellipsis" data-priority="1">Title</th>
@@ -293,7 +319,9 @@
                                                                 <div class="btn-group btn-group-sm" role="group">
                                                                     <button
                                                                         type="button"
-                                                                        class="btn btn-outline-primary edit-appointment"
+                                                                        class="btn btn-outline-primary btn-icon edit-appointment"
+                                                                        title="Edit"
+                                                                        data-toggle="tooltip"
                                                                         data-id="<?= (int)($row->id ?? 0); ?>"
                                                                         data-title="<?= htmlentities($row->title ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                                                         data-category="<?= htmlentities($row->category ?? '', ENT_QUOTES, 'UTF-8'); ?>"
@@ -305,15 +333,15 @@
                                                                         data-symptoms="<?= htmlentities($row->symptoms ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                                                         data-payment="<?= htmlentities($row->payment_reference ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                                                         data-description="<?= htmlentities($row->description ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                                                        data-public="<?= (int)($row->is_public ?? 0); ?>"
-                                                                    >
+                                                                        data-public="<?= (int)($row->is_public ?? 0); ?>">
                                                                         <i class="mdi mdi-pencil"></i>
                                                                     </button>
                                                                     <button
                                                                         type="button"
-                                                                        class="btn btn-outline-danger delete-appointment"
-                                                                        data-url="<?= site_url('dashboard/log/delete/' . ($row->id ?? 0)); ?>"
-                                                                    >
+                                                                        class="btn btn-outline-danger btn-icon delete-appointment"
+                                                                        title="Delete"
+                                                                        data-toggle="tooltip"
+                                                                        data-url="<?= site_url('dashboard/log/delete/' . ($row->id ?? 0)); ?>">
                                                                         <i class="mdi mdi-delete"></i>
                                                                     </button>
                                                                 </div>
@@ -400,16 +428,16 @@
                                                 </div>
                                             </div>
 
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6">
-                                                <label for="modalInsurance">Insurance provider</label>
-                                                <input type="text" id="modalInsurance" name="insurance_provider" class="form-control" placeholder="Insurance provider name">
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="modalInsurance">Insurance provider</label>
+                                                    <input type="text" id="modalInsurance" name="insurance_provider" class="form-control" placeholder="Insurance provider name">
+                                                </div>
+                                                <div class="form-group col-md-6">
+                                                    <label for="modalPayment">Receipt / reference (optional)</label>
+                                                    <input type="text" id="modalPayment" name="payment_reference" class="form-control" placeholder="Receipt or insurance reference">
+                                                </div>
                                             </div>
-                                            <div class="form-group col-md-6">
-                                                <label for="modalPayment">Receipt / reference (optional)</label>
-                                                <input type="text" id="modalPayment" name="payment_reference" class="form-control" placeholder="Receipt or insurance reference">
-                                            </div>
-                                        </div>
 
                                             <div class="form-group">
                                                 <label for="modalSymptoms">Symptoms / reason for visit</label>
@@ -454,31 +482,9 @@
     <?php include('includes/footer_plugins.php'); ?>
     <script>
         (function() {
-            if (window.jQuery && $.fn.DataTable) {
-                if ($('#appointments-table').length) {
-                    $('#appointments-table').DataTable({
-                        pageLength: 10,
-                        responsive: true,
-                        autoWidth: false,
-                        order: [
-                            [4, 'desc']
-                        ],
-                        columnDefs: [
-                            { targets: [3, 7, 8], render: $.fn.dataTable.render.ellipsis(30, true) },
-                            { targets: -1, orderable: false, searchable: false }
-                        ]
-                    });
-                }
-                if ($('#client-appointments-table').length) {
-                    $('#client-appointments-table').DataTable({
-                        pageLength: 10,
-                        responsive: true,
-                        autoWidth: false,
-                        order: [
-                            [2, 'desc']
-                        ]
-                    });
-                }
+            // Enable tooltips
+            if (window.jQuery && $.fn.tooltip) {
+                $('[data-toggle="tooltip"]').tooltip();
             }
 
             // Client modal handlers

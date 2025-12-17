@@ -246,6 +246,40 @@ class Login extends CI_Controller
     }
 
     /**
+     * Update appointment/accomplishment status (accept/decline) for staff/admin.
+     */
+    public function update_accomplishment_status()
+    {
+        $this->_require_login();
+        if (!($this->_is_admin() || $this->_is_staff())) {
+            return redirect('dashboard');
+        }
+
+        if ($this->input->method() !== 'post') {
+            return redirect('dashboard/log');
+        }
+
+        $id = (int)$this->input->post('id', TRUE);
+        $status = trim((string)$this->input->post('status', TRUE));
+        $allowed = ['pending', 'accepted', 'declined', 'completed'];
+
+        if ($id <= 0 || !in_array($status, $allowed, true)) {
+            $this->session->set_flashdata('error', 'Invalid request. Please try again.');
+            return redirect('dashboard/log');
+        }
+
+        $processorStaffId = (int)$this->session->userdata('staff_id');
+        $updated = $this->Accomplishment_model->update_status($id, $status, $processorStaffId);
+        if ($updated) {
+            $this->session->set_flashdata('success', 'Status updated to ' . htmlentities($status) . '.');
+        } else {
+            $this->session->set_flashdata('error', 'Unable to update status. Please try again.');
+        }
+
+        return redirect('dashboard/log');
+    }
+
+    /**
      * Logout.
      */
     public function logout()
