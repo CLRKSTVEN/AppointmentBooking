@@ -217,9 +217,35 @@ class Login extends CI_Controller
             return redirect('dashboard');
         }
 
-        // Load offices + addresses for dropdowns
+        // Load offices + addresses (province/city/brgy) for dropdowns
         $data['offices']  = $this->db->get('offices')->result();
-        $data['addresses'] = $this->db->get('settings_address')->result();
+        $addrRows = $this->db->get('address')->result();
+
+        $provinces = [];
+        $citiesByProvince = [];
+        $barangayByCity = [];
+
+        foreach ($addrRows as $row) {
+            $prov = trim((string) $row->Province);
+            $city = trim((string) $row->City);
+            $brgy = trim((string) $row->Brgy);
+
+            if ($prov === '' || $city === '' || $brgy === '') {
+                continue;
+            }
+
+            $provinces[$prov] = true;
+            $citiesByProvince[$prov][$city] = true;
+            $barangayByCity[$city][] = [
+                'id'   => (int) $row->AddID,
+                'name' => $brgy,
+            ];
+        }
+
+        $data['provinces'] = array_keys($provinces);
+        $data['citiesByProvince'] = $citiesByProvince;
+        $data['barangayByCity'] = $barangayByCity;
+        $data['addresses'] = $addrRows;
 
         $this->load->view('staff_register', $data);
     }
@@ -248,7 +274,30 @@ class Login extends CI_Controller
         if ($this->form_validation->run() === FALSE) {
             // Reload form with errors
             $data['offices']   = $this->db->get('offices')->result();
-            $data['addresses'] = $this->db->get('settings_address')->result();
+            $addrRows = $this->db->get('address')->result();
+            $provinces = [];
+            $citiesByProvince = [];
+            $barangayByCity = [];
+            foreach ($addrRows as $row) {
+                $prov = trim((string) $row->Province);
+                $city = trim((string) $row->City);
+                $brgy = trim((string) $row->Brgy);
+
+                if ($prov === '' || $city === '' || $brgy === '') {
+                    continue;
+                }
+
+                $provinces[$prov] = true;
+                $citiesByProvince[$prov][$city] = true;
+                $barangayByCity[$city][] = [
+                    'id'   => (int) $row->AddID,
+                    'name' => $brgy,
+                ];
+            }
+            $data['provinces'] = array_keys($provinces);
+            $data['citiesByProvince'] = $citiesByProvince;
+            $data['barangayByCity'] = $barangayByCity;
+            $data['addresses'] = $addrRows;
             return $this->load->view('staff_register', $data);
         }
 

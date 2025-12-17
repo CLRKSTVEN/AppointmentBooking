@@ -1,1 +1,1 @@
-<title>Attendance Portal</title>
+<title>Online Appointment Booking System</title>

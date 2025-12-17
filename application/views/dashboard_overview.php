@@ -15,8 +15,8 @@
                     <div class="row mt-3">
                         <div class="col-sm-12">
                             <div class="page-title-box">
-                                <h4 class="page-title">Online Appointment Booking — Admin Dashboard</h4>
-                                <p class="text-muted mb-0">Overview of staff, offices, and appointments.</p>
+                                <h4 class="page-title">Online Appointment Booking — My Dashboard</h4>
+                                <p class="text-muted mb-0">Quick stats and recent appointments.</p>
                             </div>
                         </div>
                     </div>
@@ -39,49 +39,29 @@
                         <div class="col-md-3 col-sm-6">
                             <div class="card-box tilebox-one">
                                 <i class="bi bi-calendar-check float-right"></i>
-                                <h6 class="text-muted text-uppercase mt-0">Appointments logged</h6>
+                                <h6 class="text-muted text-uppercase mt-0">My appointments</h6>
                                 <h3 class="my-1"><?= (int)($stats['total_accomplishments'] ?? 0); ?></h3>
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="card-box tilebox-one">
-                                <i class="bi bi-person-check float-right"></i>
-                                <h6 class="text-muted text-uppercase mt-0">My appointments</h6>
-                                <h3 class="my-1"><?= (int)($stats['my_accomplishments'] ?? 0); ?></h3>
+                                <i class="bi bi-unlock float-right"></i>
+                                <h6 class="text-muted text-uppercase mt-0">Public appointments</h6>
+                                <h3 class="my-1"><?= (int)($stats['public_accomplishments'] ?? 0); ?></h3>
                             </div>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-lg-6">
-                            <div class="card-box">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="mb-0">Latest staff</h5>
-                                    <a href="<?= site_url('register'); ?>" class="btn btn-sm btn-primary">Register staff</a>
-                                </div>
-                                <ul class="list-group list-group-flush">
-                                    <?php if (!empty($latest_staff)): ?>
-                                        <?php foreach ($latest_staff as $row): ?>
-                                            <li class="list-group-item">
-                                                <strong><?= htmlentities(trim($row->first_name . ' ' . $row->last_name)); ?></strong>
-                                                <div class="text-muted small"><?= htmlentities($row->position_title ?? ''); ?></div>
-                                            </li>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <li class="list-group-item text-muted">No staff added yet.</li>
-                                    <?php endif; ?>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
+                        <div class="col-lg-8">
                             <div class="card-box">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h5 class="mb-0">Recent appointments</h5>
-                                    <a href="<?= site_url('dashboard/log'); ?>" class="btn btn-sm btn-outline-primary">View all</a>
+                                    <a href="<?= site_url('dashboard/log'); ?>" class="btn btn-sm btn-primary">Log an appointment</a>
                                 </div>
                                 <ul class="list-group list-group-flush">
-                                    <?php if (!empty($recent_accomplishments)): ?>
-                                        <?php foreach ($recent_accomplishments as $row): ?>
+                                    <?php if (!empty($accomplishments)): ?>
+                                        <?php foreach ($accomplishments as $row): ?>
                                             <li class="list-group-item">
                                                 <strong><?= htmlentities($row->title ?? 'Untitled'); ?></strong>
                                                 <div class="text-muted small">
@@ -91,7 +71,7 @@
                                             </li>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <li class="list-group-item text-muted">No appointments logged yet.</li>
+                                        <li class="list-group-item text-muted"><?= $has_staff_profile ? 'No appointments yet. Log one below.' : 'No staff profile found. Ask an admin to register you.'; ?></li>
                                     <?php endif; ?>
                                 </ul>
                             </div>

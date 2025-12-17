@@ -10,7 +10,7 @@
                     style="cursor:pointer"
                     data-toggle="modal"
                     data-target="#OfficeTrackerModal">
-                    <b>Office Tracker © 2025. </b>
+                    <b>Online Appointment Booking System © 2025.</b>
                 </p>
             </div>
         </div>
