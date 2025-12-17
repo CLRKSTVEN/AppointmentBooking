@@ -20,8 +20,9 @@
         }
 
         function renderItem(baseHref, row) {
-          var title = row.document_type || "Document";
-          var meta = "By " + (row.student || "—") + " · " + fmtDate(row.request_date || "");
+          // For appointment notifications (staff)
+          var title = row.title || "Appointment";
+          var meta = "By " + (row.client || "—") + " · " + fmtDate(row.start_date || row.created_at || "");
           var href = baseHref || "#";
 
           return [

@@ -123,10 +123,28 @@ class Login extends CI_Controller
         $this->form_validation->set_rules('start_date', 'Start Date', 'required|trim');
         $this->form_validation->set_rules('is_public', 'Visibility', 'integer');
 
+
+        // Integrate Strategy Pattern for appointment validation
+        require_once(APPPATH . 'design_patterns/ValidationStrategy.php');
+        $validator = new \AppointmentValidator(new \PatientValidation());
+        $data = [
+            'patient_id' => $staffId // Example: using staffId as patient_id for demo
+        ];
+        if (!$validator->validate($data)) {
+            $this->session->set_flashdata('error', 'Invalid patient data.');
+            return redirect('dashboard/log');
+        }
+
         if ($this->form_validation->run() === FALSE) {
             $this->session->set_flashdata('error', validation_errors('', ''));
             return redirect('dashboard/log');
         }
+
+        // Integrate Factory Pattern for appointment creation
+        require_once(APPPATH . 'design_patterns/AppointmentFactory.php');
+        $type = 'patient'; // Default to patient, you can adjust logic as needed
+        $appointment = \AppointmentFactory::create($type);
+        $appointment->schedule(); // This could be extended to do more
 
         $startDate = $this->input->post('start_date', TRUE);
         $endDate   = $this->input->post('end_date', TRUE);
@@ -142,6 +160,19 @@ class Login extends CI_Controller
         ];
 
         $this->Accomplishment_model->create($payload);
+
+        // Integrate Observer Pattern for notifications
+        require_once(APPPATH . 'design_patterns/AppointmentObserver.php');
+        $subject = new \HospitalAppointmentSubject();
+        $subject->attach(new \PatientNotifier());
+        $subject->attach(new \DoctorNotifier());
+        $subject->notify('A new appointment has been booked.');
+
+        // Integrate Adapter Pattern for email notifications
+        require_once(APPPATH . 'design_patterns/EmailAdapter.php');
+        $emailSender = new \EmailSender(new \PHPMailerAdapter());
+        $emailSender->sendEmail('staff@example.com', 'New Appointment', 'A new appointment has been booked.');
+
         $this->session->set_flashdata('success', 'Accomplishment saved.');
         redirect('dashboard/log');
     }
@@ -206,37 +237,16 @@ class Login extends CI_Controller
             return redirect('dashboard');
         }
 
-        $existing = $this->Accomplishment_model->find($id, $staffId);
-        if (!$existing) {
-            $this->session->set_flashdata('error', 'Accomplishment not found.');
-            return redirect('dashboard');
-        }
+	$existing = $this->Accomplishment_model->find($id, $staffId);
+	if (!$existing) {
+	    $this->session->set_flashdata('error', 'Accomplishment not found.');
+	    return redirect('dashboard');
+	}
 
-        $this->Accomplishment_model->delete($id, $staffId);
-        $this->session->set_flashdata('success', 'Accomplishment deleted.');
-        redirect('dashboard/log');
+	$this->Accomplishment_model->delete($id, $staffId);
+	$this->session->set_flashdata('success', 'Accomplishment deleted.');
+	redirect('dashboard/log');
     }
-
-    public function update_accomplishment_status()
-    {
-        $this->_require_login();
-        if (!($this->_is_admin() || $this->_is_staff())) {
-            return redirect('dashboard');
-        }
-
-        $id = (int)$this->input->post('id', TRUE);
-        $status = strtolower((string)$this->input->post('status', TRUE));
-        $allowed = ['pending', 'accepted', 'declined', 'completed'];
-        if ($id <= 0 || !in_array($status, $allowed, true)) {
-            $this->session->set_flashdata('error', 'Invalid appointment or status.');
-            return redirect('dashboard/log');
-        }
-
-        $this->Accomplishment_model->update_status($id, $status, (int)$this->session->userdata('staff_id'));
-        $this->session->set_flashdata('success', 'Status updated.');
-        redirect('dashboard/log');
-    }
-
 
     /**
      * Logout.
@@ -260,12 +270,26 @@ class Login extends CI_Controller
             return redirect('dashboard');
         }
 
-        // Load offices + addresses (province/city/brgy) for dropdowns
-        $data['offices']  = $this->db->get('offices')->result();
-        $data['positions'] = $this->_position_options();
-        $addrRows = $this->db->get('address')->result();
-
         $provinces = [];
+            // Use Facade Pattern for booking
+            require_once(APPPATH . 'design_patterns/AppointmentFacade.php');
+            $input = [
+                'title'      => $this->input->post('title', TRUE),
+                'category'   => $this->input->post('category', TRUE),
+                'location'   => $this->input->post('location', TRUE),
+                'description'=> $this->input->post('description', TRUE),
+                'start_date' => $this->input->post('start_date', TRUE),
+                'end_date'   => $this->input->post('end_date', TRUE),
+                'is_public'  => (int)$this->input->post('is_public', TRUE),
+            ];
+            $result = \AppointmentFacade::bookAppointment($staffId, $input);
+            if ($result['success']) {
+                $this->Accomplishment_model->create(array_merge(['staff_id' => $staffId], $input));
+                $this->session->set_flashdata('success', $result['message']);
+            } else {
+                $this->session->set_flashdata('error', $result['message']);
+            }
+            redirect('dashboard/log');
         $citiesByProvince = [];
         $barangayByCity = [];
 

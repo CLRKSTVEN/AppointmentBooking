@@ -53,7 +53,6 @@
                        </li>
 
                        <?php include(APPPATH . 'views/includes/appointment_bell.php'); ?>
-                       <?php include(APPPATH . 'views/includes/req_bell.php'); ?>
                    <?php endif; ?>
                    <li class="dropdown notification-list">
                        <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
