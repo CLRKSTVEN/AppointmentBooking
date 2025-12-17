@@ -45,6 +45,23 @@ class Login extends CI_Controller
             return redirect('login');
         }
 
+        // Ensure every user has a staff profile for booking/visibility.
+        if (empty($user->staff_id)) {
+            $nameParts = explode('@', (string)$user->username);
+            $fallbackName = ucfirst($nameParts[0] ?? 'User');
+            $this->db->insert('staff', [
+                'first_name' => $fallbackName,
+                'last_name'  => '',
+                'position_title' => 'Client',
+                'is_active'  => 1,
+                'is_public'  => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+            $newStaffId = $this->db->insert_id();
+            $this->db->where('id', $user->id)->update('users', ['staff_id' => $newStaffId]);
+            $user->staff_id = $newStaffId;
+        }
+
         $fullName = trim(
             ($user->first_name ?? '') . ' ' .
                 ($user->middle_name ? substr($user->middle_name, 0, 1) . '. ' : '') .
@@ -93,6 +110,9 @@ class Login extends CI_Controller
     public function save_accomplishment()
     {
         $this->_require_login();
+        if (!$this->_is_client()) {
+            return redirect('dashboard');
+        }
         $staffId = (int) $this->session->userdata('staff_id');
         if ($staffId <= 0) {
             $this->session->set_flashdata('error', 'Unable to save accomplishment without a staff profile.');
@@ -129,6 +149,9 @@ class Login extends CI_Controller
     public function update_accomplishment()
     {
         $this->_require_login();
+        if (!$this->_is_client()) {
+            return redirect('dashboard');
+        }
         $staffId = (int) $this->session->userdata('staff_id');
         if ($staffId <= 0) {
             $this->session->set_flashdata('error', 'Unable to update accomplishment without a staff profile.');
@@ -191,6 +214,26 @@ class Login extends CI_Controller
 
         $this->Accomplishment_model->delete($id, $staffId);
         $this->session->set_flashdata('success', 'Accomplishment deleted.');
+        redirect('dashboard/log');
+    }
+
+    public function update_accomplishment_status()
+    {
+        $this->_require_login();
+        if (!($this->_is_admin() || $this->_is_staff())) {
+            return redirect('dashboard');
+        }
+
+        $id = (int)$this->input->post('id', TRUE);
+        $status = strtolower((string)$this->input->post('status', TRUE));
+        $allowed = ['pending', 'accepted', 'declined', 'completed'];
+        if ($id <= 0 || !in_array($status, $allowed, true)) {
+            $this->session->set_flashdata('error', 'Invalid appointment or status.');
+            return redirect('dashboard/log');
+        }
+
+        $this->Accomplishment_model->update_status($id, $status, (int)$this->session->userdata('staff_id'));
+        $this->session->set_flashdata('success', 'Status updated.');
         redirect('dashboard/log');
     }
 
@@ -511,11 +554,14 @@ class Login extends CI_Controller
     private function _staff_dashboard_data(?array $overviewNav = null)
     {
         $staffId = (int) $this->session->userdata('staff_id');
+        $role    = strtolower((string)$this->session->userdata('role'));
         $isAdmin = $this->_is_admin();
+        $isStaff = $this->_is_staff();
+        $isClient = ($role === 'client');
 
-        $accomplishments = ($staffId > 0 && !$isAdmin)
+        $accomplishments = ($staffId > 0 && $isClient)
             ? $this->Accomplishment_model->get_for_staff($staffId)
-            : [];
+            : $this->Accomplishment_model->all_with_staff();
 
         $categories = $staffId > 0
             ? $this->Accomplishment_model->categories_for_staff($staffId)
@@ -543,13 +589,15 @@ class Login extends CI_Controller
             'accomplishment_categories' => array_filter(array_map(function ($row) {
                 return $row->category;
             }, $categories)),
-            'can_manage_accomplishments' => $staffId > 0,
+            'can_manage_accomplishments' => $isClient && $staffId > 0,
             'overview_nav' => $overviewNav,
             'addresses' => $addresses,
             'appointment_types' => $appointmentTypes,
             'appointment_rooms' => $appointmentRooms,
             'is_admin' => $isAdmin,
-            'all_appointments' => $isAdmin ? $this->Accomplishment_model->all_with_staff() : [],
+            'is_staff' => $isStaff,
+            'is_client' => $isClient,
+            'current_staff_id' => $staffId,
         ];
     }
 
@@ -588,6 +636,11 @@ class Login extends CI_Controller
     private function _is_staff()
     {
         return strtolower((string) $this->session->userdata('role')) === 'staff';
+    }
+
+    private function _is_client()
+    {
+        return strtolower((string) $this->session->userdata('role')) === 'client';
     }
 
     /**

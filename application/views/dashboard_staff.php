@@ -17,10 +17,10 @@
                             <div class="page-title-box d-flex justify-content-between align-items-center">
                                 <div>
                                     <h4 class="page-title mb-0">
-                                        <?= $is_admin ? 'All consultations' : 'Online Appointment Booking — Appointments'; ?>
+                                        <?= ($is_admin || $is_staff) ? 'All consultations' : 'Online Appointment Booking — Appointments'; ?>
                                     </h4>
                                     <p class="text-muted mb-0">
-                                        <?= $is_admin ? 'View all consultations booked by clients/staff.' : 'Log and manage your appointments.'; ?>
+                                        <?= ($is_admin || $is_staff) ? 'View all consultations booked by clients.' : 'Log and manage your appointments.'; ?>
                                     </p>
                                 </div>
                                 <?php if (!empty($overview_nav)): ?>
@@ -35,7 +35,7 @@
                     </div>
 
                     <div class="row">
-                        <?php if (!$is_admin): ?>
+                        <?php if ($is_client): ?>
                             <div class="col-lg-6">
                                 <div class="card-box">
                                     <h5 class="mb-3">Log an appointment</h5>
@@ -95,36 +95,76 @@
                             </div>
                         <?php endif; ?>
 
-                        <div class="<?= $is_admin ? 'col-lg-12' : 'col-lg-6'; ?>">
+                        <div class="<?= ($is_admin || $is_staff) ? 'col-lg-12' : 'col-lg-6'; ?>">
                             <div class="card-box">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="mb-0"><?= $is_admin ? 'All appointments' : 'Your appointments'; ?></h5>
+                                    <h5 class="mb-0"><?= ($is_admin || $is_staff) ? 'All appointments' : 'Your appointments'; ?></h5>
                                 </div>
-                                <ul class="list-group list-group-flush">
-                                    <?php
-                                    $list = $is_admin ? ($all_appointments ?? []) : ($accomplishments ?? []);
-                                    ?>
-                                    <?php if (!empty($list)): ?>
-                                        <?php foreach ($list as $row): ?>
-                                            <li class="list-group-item">
-                                                <div class="d-flex justify-content-between">
-                                                    <div>
-                                                        <strong><?= htmlentities($row->title ?? 'Untitled'); ?></strong><br>
-                                                        <span class="text-muted small">
-                                                            <?= htmlentities($row->category ?? 'General'); ?>
-                                                            <?php if (!empty($row->start_date)): ?> · <?= htmlentities($row->start_date); ?><?php endif; ?>
-                                                            <?php
-                                                            if ($is_admin) {
-                                                                $by = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
-                                                                if ($by !== '') {
-                                                                    echo ' · by ' . htmlentities($by);
-                                                                }
-                                                            }
-                                                            ?>
-                                                        </span><br>
-                                                        <span class="text-muted small"><?= htmlentities($row->description ?? ''); ?></span>
-                                                    </div>
-                                                    <?php if (!$is_admin): ?>
+
+                                <?php $list = $accomplishments ?? []; ?>
+
+                                <?php if ($is_admin || $is_staff): ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-bordered" id="appointments-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Title</th>
+                                                    <th>Type</th>
+                                                    <th>Client</th>
+                                                    <th>Start</th>
+                                                    <th>Location</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($list as $row): ?>
+                                                    <tr>
+                                                        <td><?= htmlentities($row->title ?? 'Untitled'); ?></td>
+                                                        <td><?= htmlentities($row->category ?? ''); ?></td>
+                                                        <td><?= htmlentities(trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''))); ?></td>
+                                                        <td><?= htmlentities($row->start_date ?? ''); ?></td>
+                                                        <td><?= htmlentities($row->location ?? ''); ?></td>
+                                                        <td>
+                                                            <span class="badge badge-<?= ($row->status ?? 'pending') === 'accepted' ? 'success' : (($row->status ?? 'pending') === 'declined' ? 'danger' : 'secondary'); ?>">
+                                                                <?= htmlentities($row->status ?? 'pending'); ?>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <?php if (($row->status ?? '') === 'pending'): ?>
+                                                                <form method="post" action="<?= site_url('dashboard/log/status'); ?>" style="display:inline;">
+                                                                    <input type="hidden" name="id" value="<?= (int)($row->id ?? 0); ?>">
+                                                                    <input type="hidden" name="status" value="accepted">
+                                                                    <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                                                                </form>
+                                                                <form method="post" action="<?= site_url('dashboard/log/status'); ?>" style="display:inline;">
+                                                                    <input type="hidden" name="id" value="<?= (int)($row->id ?? 0); ?>">
+                                                                    <input type="hidden" name="status" value="declined">
+                                                                    <button type="submit" class="btn btn-sm btn-danger">Decline</button>
+                                                                </form>
+                                                            <?php else: ?>
+                                                                <small>Processed<?= !empty($row->processor_first) ? ' by ' . htmlentities(trim($row->processor_first . ' ' . $row->processor_last)) : ''; ?></small>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <?php else: ?>
+                                    <ul class="list-group list-group-flush">
+                                        <?php if (!empty($list)): ?>
+                                            <?php foreach ($list as $row): ?>
+                                                <li class="list-group-item">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div>
+                                                            <strong><?= htmlentities($row->title ?? 'Untitled'); ?></strong><br>
+                                                            <span class="text-muted small">
+                                                                <?= htmlentities($row->category ?? 'General'); ?>
+                                                                <?php if (!empty($row->start_date)): ?> · <?= htmlentities($row->start_date); ?><?php endif; ?>
+                                                            </span><br>
+                                                            <span class="text-muted small"><?= htmlentities($row->description ?? ''); ?></span>
+                                                        </div>
                                                         <div class="text-right">
                                                             <span class="badge <?= ($row->is_public ?? 0) ? 'badge-primary' : 'badge-secondary'; ?>">
                                                                 <?= ($row->is_public ?? 0) ? 'Public' : 'Private'; ?>
@@ -133,14 +173,14 @@
                                                                 <a href="<?= site_url('dashboard/log/delete/' . ($row->id ?? 0)); ?>" class="text-danger small">Delete</a>
                                                             </div>
                                                         </div>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </li>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <li class="list-group-item text-muted">No appointments yet.</li>
-                                    <?php endif; ?>
-                                </ul>
+                                                    </div>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <li class="list-group-item text-muted">No appointments yet.</li>
+                                        <?php endif; ?>
+                                    </ul>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -153,6 +193,18 @@
 
     <?php include('includes/themecustomizer.php'); ?>
     <?php include('includes/footer_plugins.php'); ?>
+    <?php if ($is_admin || $is_staff): ?>
+    <script>
+        (function() {
+            if (window.jQuery && $.fn.DataTable) {
+                $('#appointments-table').DataTable({
+                    pageLength: 10,
+                    order: [[3, 'desc']]
+                });
+            }
+        })();
+    </script>
+    <?php endif; ?>
 </body>
 
 </html>

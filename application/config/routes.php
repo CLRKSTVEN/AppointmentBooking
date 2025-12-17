@@ -12,6 +12,7 @@ $route['dashboard/log']  = 'login/accomplishments';
 $route['dashboard/log/save']   = 'login/save_accomplishment';
 $route['dashboard/log/update'] = 'login/update_accomplishment';
 $route['dashboard/log/delete/(:num)'] = 'login/delete_accomplishment/$1';
+$route['dashboard/log/status'] = 'login/update_accomplishment_status';
 
 $route['register']       = 'login/register';        // show registration form
 $route['register/save']  = 'login/register_save';  // handle registration POST

@@ -77,9 +77,10 @@ class Accomplishment_model extends CI_Model
     public function all_with_staff(): array
     {
         return $this->db
-            ->select('a.*, s.first_name, s.last_name')
+            ->select('a.*, s.first_name, s.last_name, ps.first_name AS processor_first, ps.last_name AS processor_last')
             ->from($this->table . ' a')
             ->join('staff s', 's.staff_id = a.staff_id', 'left')
+            ->join('staff ps', 'ps.staff_id = a.processed_by', 'left')
             ->order_by('a.created_at', 'DESC')
             ->get()
             ->result();
@@ -105,6 +106,9 @@ class Accomplishment_model extends CI_Model
     {
         if (!isset($payload['created_at'])) {
             $payload['created_at'] = date('Y-m-d H:i:s');
+        }
+        if (empty($payload['status'])) {
+            $payload['status'] = 'pending';
         }
 
         $this->db->insert($this->table, $payload);
@@ -146,5 +150,21 @@ class Accomplishment_model extends CI_Model
             ->where('id', $id)
             ->where('staff_id', $staffId)
             ->delete($this->table);
+    }
+
+    public function update_status(int $id, string $status, ?int $processorStaffId = null): bool
+    {
+        $allowed = ['pending', 'accepted', 'declined', 'completed'];
+        if (!in_array($status, $allowed, true)) {
+            return false;
+        }
+        $data = [
+            'status' => $status,
+            'processed_at' => date('Y-m-d H:i:s'),
+        ];
+        if ($processorStaffId) {
+            $data['processed_by'] = $processorStaffId;
+        }
+        return $this->db->where('id', $id)->update($this->table, $data);
     }
 }

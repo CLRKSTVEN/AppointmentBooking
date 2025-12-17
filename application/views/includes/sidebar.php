@@ -14,7 +14,7 @@
             ]
             : [
                 ['route' => 'dashboard',      'label' => 'My dashboard',       'icon' => 'bi-speedometer2'],
-                ['route' => 'dashboard/log',  'label' => 'My appointments', 'icon' => 'bi-journal-plus'],
+                ['route' => 'dashboard/log',  'label' => 'Appointments', 'icon' => 'bi-journal-plus'],
             ];
         ?>
 
