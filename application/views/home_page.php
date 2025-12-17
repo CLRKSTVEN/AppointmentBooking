@@ -5,140 +5,424 @@
 
 <style>
   body {
-    background-color: #f4f6fb;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Animated background particles */
+  body::before {
+    content: '';
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: float 8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
   }
 
   .login-page-wrapper {
     min-height: 100vh;
     display: flex;
-    align-items: stretch;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
   }
 
-  .login-left-img {
-    min-height: 100vh;
-    object-fit: cover;
+  .login-container {
+    display: flex;
+    max-width: 1100px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
   }
 
-  .login-card {
+  .login-left-section {
+    flex: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-left-section::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    top: -100px;
+    right: -100px;
+    animation: pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+
+    50% {
+      transform: scale(1.1);
+      opacity: 0.5;
+    }
+  }
+
+  .welcome-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+
+  .welcome-content h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .welcome-content p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+
+  .feature-list {
+    text-align: left;
+    margin-top: 30px;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+  }
+
+  .feature-item i {
+    font-size: 1.3rem;
+    margin-right: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: 30px 15px;
+    border-radius: 8px;
   }
 
-  .login-card-inner {
-    width: 100%;
-    max-width: 420px;
-    border-radius: 16px;
-    border: 1px solid #e0e6f1;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-    background: #ffffff;
-    padding: 28px 26px 26px;
+  .login-right-section {
+    flex: 1;
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .login-header {
+    text-align: center;
+    margin-bottom: 40px;
   }
 
   .login-brand {
-    text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 25px;
   }
 
   .login-brand img {
-    max-height: 60px;
+    max-height: 70px;
   }
 
-  .login-title {
-    text-align: center;
-    margin-bottom: 6px;
-  }
-
-  .login-title h4 {
-    margin-bottom: 0;
+  .login-header h3 {
+    font-size: 1.8rem;
     font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 8px;
   }
 
-  .login-title small {
-    color: #6c757d;
+  .login-header p {
+    color: #718096;
+    font-size: 0.95rem;
   }
 
-  .form-floating-label {
+  .form-group-modern {
+    margin-bottom: 24px;
     position: relative;
-    margin-bottom: 1rem;
   }
 
-  .form-floating-label input {
-    padding: 0.75rem 2.5rem 0.35rem 2.3rem;
-    /* extra right space for eye icon */
-    border-radius: 0.5rem;
+  .form-group-modern label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 8px;
   }
 
-  .form-floating-label label {
+  .input-wrapper {
+    position: relative;
+  }
+
+  .input-wrapper .input-icon {
     position: absolute;
-    left: 2.35rem;
+    left: 16px;
     top: 50%;
     transform: translateY(-50%);
-    margin: 0;
-    font-size: 0.85rem;
-    color: #9ca3af;
-    pointer-events: none;
-    transition: all 0.15s ease;
-    background: #fff;
-    padding: 0 4px;
+    color: #a0aec0;
+    font-size: 1.1rem;
+    z-index: 2;
   }
 
-  .form-floating-label input:focus+label,
-  .form-floating-label input:not(:placeholder-shown)+label {
-    top: -1px;
-    font-size: 0.75rem;
-    color: #2563eb;
+  .form-group-modern input {
+    width: 100%;
+    padding: 14px 16px 14px 48px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: #f7fafc;
   }
 
-  .input-icon {
-    position: absolute;
-    left: 0.65rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-    font-size: 1rem;
+  .form-group-modern input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   .toggle-password {
     position: absolute;
-    right: 0.7rem;
+    right: 16px;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    color: #9ca3af;
-    font-size: 1.1rem;
+    color: #a0aec0;
+    font-size: 1.2rem;
+    z-index: 2;
+    transition: color 0.3s ease;
   }
 
-  .login-footer-text {
-    font-size: 0.85rem;
-    margin-top: 1rem;
-    text-align: center;
+  .toggle-password:hover {
+    color: #667eea;
   }
 
-  .login-footer-text a {
+  .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    font-size: 0.875rem;
+  }
+
+  .custom-checkbox-modern {
+    display: flex;
+    align-items: center;
+  }
+
+  .custom-checkbox-modern input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    cursor: pointer;
+    accent-color: #667eea;
+  }
+
+  .custom-checkbox-modern label {
+    cursor: pointer;
+    color: #4a5568;
+    margin: 0;
+  }
+
+  .forgot-link {
+    color: #667eea;
+    text-decoration: none;
     font-weight: 600;
+    transition: color 0.3s ease;
+  }
+
+  .forgot-link:hover {
+    color: #764ba2;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  }
+
+  .btn-login:active {
+    transform: translateY(0);
+  }
+
+  .signup-prompt {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 0.9rem;
+    color: #718096;
+  }
+
+  .signup-prompt a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+
+  .signup-prompt a:hover {
+    color: #764ba2;
   }
 
   .alert {
-    font-size: 0.85rem;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 0.875rem;
+    border: none;
+  }
+
+  .alert-info {
+    background: #e6f7ff;
+    color: #0066cc;
+  }
+
+  .alert-success {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  /* Loader styles */
+  .loader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.25s ease;
+  }
+
+  .loader {
+    display: flex;
+    gap: 8px;
+  }
+
+  .loader-bar {
+    width: 4px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    animation: load 1s ease-in-out infinite;
+  }
+
+  .loader-bar:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .loader-bar:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+
+  .loader-bar:nth-child(4) {
+    animation-delay: 0.3s;
+  }
+
+  .loader-bar:nth-child(5) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes load {
+
+    0%,
+    100% {
+      height: 40px;
+    }
+
+    50% {
+      height: 60px;
+    }
+  }
+
+  .loader-ball {
+    display: none;
   }
 
   @media (max-width: 991.98px) {
-    .login-left-col {
+    .login-left-section {
       display: none;
     }
 
-    .login-card {
-      min-height: 100vh;
+    .login-container {
+      max-width: 500px;
+    }
+
+    .login-right-section {
+      padding: 40px 30px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .login-right-section {
+      padding: 30px 20px;
+    }
+
+    .login-header h3 {
+      font-size: 1.5rem;
     }
   }
 </style>
 
 <body>
 
-  <!-- Loader starts-->
+  <!-- Loader -->
   <div class="loader-wrapper">
     <div class="loader">
       <div class="loader-bar"></div>
@@ -149,139 +433,162 @@
       <div class="loader-ball"></div>
     </div>
   </div>
-  <!-- Loader ends-->
 
   <section class="login-page-wrapper">
-    <div class="container-fluid">
-      <div class="row no-gutters">
+    <div class="login-container">
 
-        <!-- Left image -->
-        <div class="col-xl-5 col-lg-5 col-md-4 login-left-col">
-          <img class="login-left-img w-100"
-            src="<?= base_url(); ?>assets/images/login/2.png"
-            alt="Login background">
-        </div>
+      <!-- Left Section - Welcome -->
+      <div class="login-left-section">
+        <div class="welcome-content">
+          <h2>Welcome Back!</h2>
+          <p>Streamline your appointment management with our comprehensive booking system</p>
 
-        <!-- Right card -->
-        <div class="col-xl-7 col-lg-7 col-md-8 d-flex justify-content-center p-0">
-          <div class="login-card w-100">
-            <div class="login-card-inner">
-
-              <!-- Optional logo -->
-              <div class="login-brand">
-                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="Online Appointment Booking">
-              </div>
-
-              <!-- Title + subtitle -->
-              <div class="login-title">
-                <h4>Online Appointment Booking System</h4>
-                <small>Sign in to manage schedules, clients, and appointments.</small>
-              </div>
-
-              <!-- Flash messages -->
-              <?php if ($this->session->flashdata('message')): ?>
-                <div class="alert alert-info alert-dismissible fade show mt-2" role="alert">
-                  <?= $this->session->flashdata('message'); ?>
-                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-              <?php endif; ?>
-
-              <?php if ($this->session->flashdata('success')): ?>
-                <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
-                  <?= $this->session->flashdata('success'); ?>
-                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-              <?php endif; ?>
-
-              <?php if ($this->session->flashdata('danger')): ?>
-                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
-                  <?= $this->session->flashdata('danger'); ?>
-                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-              <?php endif; ?>
-
-              <!-- Login form -->
-              <form action="<?= site_url('Login/auth'); ?>" method="post" class="mt-3">
-
-                <!-- Username -->
-                <div class="form-floating-label">
-                  <span class="input-icon">
-                    <i class="mdi mdi-email-outline"></i>
-                  </span>
-                  <input
-                    type="text"
-                    name="username"
-                    class="form-control"
-                    required
-                    autocomplete="username"
-                    placeholder=" ">
-                  <label>Email / Username</label>
-                </div>
-
-                <!-- Password -->
-                <div class="form-floating-label">
-                  <span class="input-icon">
-                    <i class="mdi mdi-lock-outline"></i>
-                  </span>
-                  <input
-                    type="password"
-                    id="loginPassword"
-                    name="password"
-                    class="form-control"
-                    required
-                    autocomplete="current-password"
-                    placeholder=" ">
-                  <label>Password</label>
-                  <span class="toggle-password" data-target="#loginPassword">
-                    <i class="mdi mdi-eye-outline"></i>
-                  </span>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="rememberMe">
-                    <label class="custom-control-label text-muted" for="rememberMe">Remember me</label>
-                  </div>
-                  <a class="link" href="<?= site_url('login/forgot'); ?>">Forgot Password?</a>
-                  <!-- TODO: Wire this to your actual forgot-password route if available -->
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">
-                  Sign in
-                </button>
-
-              </form>
-
-              <div class="login-footer-text">
-                Don't have an account?
-                <a href="<?= site_url('login/registration'); ?>">
-                  Create one here
-                </a>
-              </div>
-
+          <div class="feature-list">
+            <div class="feature-item">
+              <i class="mdi mdi-calendar-check"></i>
+              <span>Easy scheduling & management</span>
+            </div>
+            <div class="feature-item">
+              <i class="mdi mdi-account-multiple"></i>
+              <span>Client relationship tracking</span>
+            </div>
+            <div class="feature-item">
+              <i class="mdi mdi-clock-outline"></i>
+              <span>Real-time availability updates</span>
+            </div>
+            <div class="feature-item">
+              <i class="mdi mdi-bell-outline"></i>
+              <span>Automated reminders</span>
             </div>
           </div>
         </div>
-
       </div>
+
+      <!-- Right Section - Login Form -->
+      <div class="login-right-section">
+        <div class="login-header">
+          <div class="login-brand">
+            <img src="<?= base_url(); ?>assets/images/Attendance.png" alt="AppointFlow">
+          </div>
+          <h3>Sign In</h3>
+          <p>Enter your credentials to access your AppointFlow account</p>
+        </div>
+
+        <!-- Flash messages -->
+        <?php if ($this->session->flashdata('message')): ?>
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <?= $this->session->flashdata('message'); ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('success')): ?>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= $this->session->flashdata('success'); ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('danger')): ?>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= $this->session->flashdata('danger'); ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        <?php endif; ?>
+
+        <!-- Login Form -->
+        <form action="<?= site_url('Login/auth'); ?>" method="post">
+
+          <!-- Username -->
+          <div class="form-group-modern">
+            <label for="username">Email / Username</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <i class="mdi mdi-email-outline"></i>
+              </span>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                class="form-control"
+                required
+                autocomplete="username"
+                placeholder="Enter your email or username">
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group-modern">
+            <label for="loginPassword">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <i class="mdi mdi-lock-outline"></i>
+              </span>
+              <input
+                type="password"
+                id="loginPassword"
+                name="password"
+                class="form-control"
+                required
+                autocomplete="current-password"
+                placeholder="Enter your password">
+              <span class="toggle-password" data-target="#loginPassword">
+                <i class="mdi mdi-eye-outline"></i>
+              </span>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="form-options">
+            <div class="custom-checkbox-modern">
+              <input type="checkbox" id="rememberMe">
+              <label for="rememberMe">Remember me</label>
+            </div>
+            <a href="<?= site_url('login/forgot'); ?>" class="forgot-link">Forgot Password?</a>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-login">
+            Sign In
+          </button>
+        </form>
+
+        <!-- Signup Prompt -->
+        <div class="signup-prompt">
+          Don't have an account?
+          <a href="<?= site_url('login/registration'); ?>">Create one here</a>
+        </div>
+      </div>
+
     </div>
   </section>
 
   <!-- JS -->
-  <script src="<?= base_url(); ?>assets/js/jquery-3.5.1.min.js"></script>
-  <script src="<?= base_url(); ?>assets/js/bootstrap/bootstrap.bundle.min.js"></script>
-  <script src="<?= base_url(); ?>assets/js/icons/feather-icon/feather.min.js"></script>
-  <script src="<?= base_url(); ?>assets/js/icons/feather-icon/feather-icon.js"></script>
-  <script src="<?= base_url(); ?>assets/js/config.js"></script>
-  <script src="<?= base_url(); ?>assets/js/script.js"></script>
+  <script src="<?= base_url(); ?>assets/js/jquery-3.6.0.min.js"></script>
+  <script src="<?= base_url(); ?>assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
   <script>
+    // Hide loader once page is ready (fallback timeout included)
+    (function() {
+      function hideLoader() {
+        var el = document.querySelector('.loader-wrapper');
+        if (!el || el.dataset.hidden === '1') return;
+        el.dataset.hidden = '1';
+        el.style.opacity = '0';
+        setTimeout(function() {
+          el.style.display = 'none';
+        }, 250);
+      }
+      window.addEventListener('load', hideLoader);
+      setTimeout(hideLoader, 1500);
+    })();
+
     // Show / hide password
     $(document).on('click', '.toggle-password', function() {
       var targetSelector = $(this).data('target');

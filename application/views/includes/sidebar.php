@@ -20,7 +20,7 @@
 
         <div id="sidebar-menu">
             <ul class="metismenu" id="side-menu">
-                <li class="menu-title">Appointment Booking</li>
+                <li class="menu-title">AppointFlow</li>
                 <?php foreach ($navItems as $meta): ?>
                     <?php
                     $routeKey = trim($meta['route'], '/');

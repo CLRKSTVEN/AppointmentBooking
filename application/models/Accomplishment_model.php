@@ -30,6 +30,24 @@ class Accomplishment_model extends CI_Model
             ->count_all_results($this->table) > 0;
     }
 
+    public function has_doctor_conflict(?string $doctor, ?string $dateTime, ?int $excludeId = null): bool
+    {
+        if (trim((string)$doctor) === '' || trim((string)$dateTime) === '') {
+            return false;
+        }
+
+        $this->db
+            ->where('doctor', $doctor)
+            ->where('start_date', $dateTime)
+            ->where_not_in('status', ['declined', 'completed']);
+
+        if ($excludeId !== null && $excludeId > 0) {
+            $this->db->where('id !=', $excludeId);
+        }
+
+        return $this->db->count_all_results($this->table) > 0;
+    }
+
     public function count_for_staff(int $staffId): int
     {
         if ($staffId <= 0) {
@@ -109,9 +127,10 @@ class Accomplishment_model extends CI_Model
     public function all_with_staff(): array
     {
         return $this->db
-            ->select('a.*, s.first_name, s.last_name, ps.first_name AS processor_first, ps.last_name AS processor_last')
+            ->select('a.*, s.first_name, s.last_name, u.username AS client_email, ps.first_name AS processor_first, ps.last_name AS processor_last')
             ->from($this->table . ' a')
             ->join('staff s', 's.staff_id = a.staff_id', 'left')
+            ->join('users u', 'u.staff_id = a.staff_id', 'left')
             ->join('staff ps', 'ps.staff_id = a.processed_by', 'left')
             ->order_by('a.created_at', 'DESC')
             ->get()

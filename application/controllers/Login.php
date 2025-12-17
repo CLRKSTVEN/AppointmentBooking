@@ -124,6 +124,7 @@ class Login extends CI_Controller
         $this->form_validation->set_rules('symptoms', 'Symptoms/Reason', 'required|trim');
         $this->form_validation->set_rules('doctor', 'Preferred doctor', 'trim');
         $this->form_validation->set_rules('insurance_provider', 'Insurance provider', 'trim');
+        $this->form_validation->set_rules('start_time', 'Start Time', 'required|trim');
         $this->form_validation->set_rules('is_public', 'Visibility', 'integer');
 
         if ($this->form_validation->run() === FALSE) {
@@ -132,17 +133,27 @@ class Login extends CI_Controller
         }
 
         $startDate = $this->input->post('start_date', TRUE);
-        $endDate   = $this->input->post('end_date', TRUE);
+        $startTime = $this->input->post('start_time', TRUE);
+        $startDateTime = $this->_combine_date_time($startDate, $startTime);
         $payload = [
             'staff_id'   => $staffId,
             'title'      => $this->input->post('title', TRUE),
             'category'   => $this->input->post('category', TRUE),
             'location'   => $this->input->post('location', TRUE),
             'description'=> $this->input->post('description', TRUE),
-            'start_date' => $startDate !== '' ? $startDate : null,
-            'end_date'   => $endDate !== '' ? $endDate : null,
+            'symptoms'   => $this->input->post('symptoms', TRUE),
+            'payment_reference' => $this->input->post('payment_reference', TRUE),
+            'doctor'     => $this->input->post('doctor', TRUE),
+            'insurance_provider' => $this->input->post('insurance_provider', TRUE),
+            'start_date' => $startDateTime,
+            'end_date'   => null,
             'is_public'  => (int)$this->input->post('is_public', TRUE),
         ];
+
+        if ($this->Accomplishment_model->has_doctor_conflict($payload['doctor'], $payload['start_date'])) {
+            $this->session->set_flashdata('error', 'The selected doctor is not available at that date/time. Please choose another time or doctor.');
+            return redirect('dashboard/log');
+        }
 
         $this->Accomplishment_model->create($payload);
         $this->session->set_flashdata('success', 'Accomplishment saved.');
@@ -167,6 +178,7 @@ class Login extends CI_Controller
         $this->form_validation->set_rules('symptoms', 'Symptoms/Reason', 'required|trim');
         $this->form_validation->set_rules('doctor', 'Preferred doctor', 'trim');
         $this->form_validation->set_rules('insurance_provider', 'Insurance provider', 'trim');
+        $this->form_validation->set_rules('start_time', 'Start Time', 'required|trim');
 
         if ($this->form_validation->run() === FALSE) {
             $this->session->set_flashdata('error', validation_errors('', ''));
@@ -181,7 +193,8 @@ class Login extends CI_Controller
         }
 
         $startDate = $this->input->post('start_date', TRUE);
-        $endDate   = $this->input->post('end_date', TRUE);
+        $startTime = $this->input->post('start_time', TRUE);
+        $startDateTime = $this->_combine_date_time($startDate, $startTime);
         $payload = [
             'title'      => $this->input->post('title', TRUE),
             'category'   => $this->input->post('category', TRUE),
@@ -191,10 +204,15 @@ class Login extends CI_Controller
             'payment_reference' => $this->input->post('payment_reference', TRUE),
             'doctor'     => $this->input->post('doctor', TRUE),
             'insurance_provider' => $this->input->post('insurance_provider', TRUE),
-            'start_date' => $startDate !== '' ? $startDate : null,
-            'end_date'   => $endDate !== '' ? $endDate : null,
+            'start_date' => $startDateTime,
+            'end_date'   => null,
             'is_public'  => (int)$this->input->post('is_public', TRUE),
         ];
+
+        if ($this->Accomplishment_model->has_doctor_conflict($payload['doctor'], $payload['start_date'], $id)) {
+            $this->session->set_flashdata('error', 'The selected doctor is not available at that date/time. Please choose another time or doctor.');
+            return redirect('dashboard/log');
+        }
 
         $this->Accomplishment_model->update($id, $staffId, $payload);
         $this->session->set_flashdata('success', 'Accomplishment updated.');
@@ -683,6 +701,22 @@ class Login extends CI_Controller
             'Therapist',
             'Support Staff',
         ];
+    }
+
+    /**
+     * Combine date + time into a single string for storage.
+     */
+    private function _combine_date_time(?string $date, ?string $time): ?string
+    {
+        $date = trim((string)$date);
+        $time = trim((string)$time);
+        if ($date === '') {
+            return null;
+        }
+        if ($time === '') {
+            return $date;
+        }
+        return $date . ' ' . $time . ':00';
     }
 
     /**

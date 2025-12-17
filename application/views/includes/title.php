@@ -1,1 +1,1 @@
-<title>Online Appointment Booking System</title>
+<title>AppointFlow</title>
