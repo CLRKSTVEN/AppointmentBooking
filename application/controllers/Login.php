@@ -301,26 +301,8 @@ class Login extends CI_Controller
             return redirect('dashboard');
         }
 
+        $addrRows = $this->db->get('address')->result();
         $provinces = [];
-            // Use Facade Pattern for booking
-            require_once(APPPATH . 'design_patterns/AppointmentFacade.php');
-            $input = [
-                'title'      => $this->input->post('title', TRUE),
-                'category'   => $this->input->post('category', TRUE),
-                'location'   => $this->input->post('location', TRUE),
-                'description'=> $this->input->post('description', TRUE),
-                'start_date' => $this->input->post('start_date', TRUE),
-                'end_date'   => $this->input->post('end_date', TRUE),
-                'is_public'  => (int)$this->input->post('is_public', TRUE),
-            ];
-            $result = \AppointmentFacade::bookAppointment($staffId, $input);
-            if ($result['success']) {
-                $this->Accomplishment_model->create(array_merge(['staff_id' => $staffId], $input));
-                $this->session->set_flashdata('success', $result['message']);
-            } else {
-                $this->session->set_flashdata('error', $result['message']);
-            }
-            redirect('dashboard/log');
         $citiesByProvince = [];
         $barangayByCity = [];
 
@@ -345,6 +327,8 @@ class Login extends CI_Controller
         $data['citiesByProvince'] = $citiesByProvince;
         $data['barangayByCity'] = $barangayByCity;
         $data['addresses'] = $addrRows;
+        $data['offices'] = $this->db->get('offices')->result();
+        $data['positions'] = $this->_position_options();
 
         $this->load->view('staff_register', $data);
     }
