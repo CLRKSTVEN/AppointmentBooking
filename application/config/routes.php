@@ -14,6 +14,12 @@ $route['dashboard/log/update'] = 'login/update_accomplishment';
 $route['dashboard/log/delete/(:num)'] = 'login/delete_accomplishment/$1';
 $route['dashboard/log/status'] = 'login/update_accomplishment_status';
 
+$route['messages'] = 'messages/index';
+$route['messages/send'] = 'messages/send';
+$route['messages/thread'] = 'messages/thread';
+$route['messages/send_ajax'] = 'messages/send_ajax';
+$route['messages/unread_count'] = 'messages/unread_count';
+
 $route['register']       = 'login/register';        // show registration form
 $route['register/save']  = 'login/register_save';  // handle registration POST
 

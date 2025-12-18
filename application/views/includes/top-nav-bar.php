@@ -19,6 +19,21 @@ $avatarUrl = base_url('upload/profile/' . $avatarFile);
                <ul class="list-unstyled topnav-menu float-right mb-0">
                    <?php include(APPPATH . 'views/includes/appointment_bell.php'); ?>
                    <li class="dropdown notification-list">
+                       <a class="nav-link dropdown-toggle waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                           <i class="mdi mdi-message-text-outline noti-icon"></i>
+                           <span id="msg-badge" class="badge badge-danger rounded-circle noti-icon-badge" style="display:none;">0</span>
+                       </a>
+                       <div class="dropdown-menu dropdown-menu-right dropdown-lg">
+                           <div class="dropdown-item noti-title d-flex justify-content-between align-items-center">
+                               <h5 class="font-16 m-0">Messages</h5>
+                               <a href="<?= site_url('messages'); ?>" class="text-muted small">Open</a>
+                           </div>
+                           <div class="p-2">
+                               <a href="<?= site_url('messages'); ?>" class="btn btn-primary btn-block btn-sm">Go to inbox</a>
+                           </div>
+                       </div>
+                   </li>
+                   <li class="dropdown notification-list">
                        <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                            <img src="<?= $avatarUrl; ?>" alt="user-image" class="rounded-circle">
                            <span class="pro-user-name ml-1">
@@ -111,3 +126,38 @@ $avatarUrl = base_url('upload/profile/' . $avatarFile);
                    </li>
                </ul>
            </div>
+
+<script>
+(function() {
+    // Lightweight polling for unread message count
+    function updateMsgBadge() {
+        if (!window.jQuery) return;
+        $.getJSON('<?= site_url('messages/unread_count'); ?>')
+            .done(function(res) {
+                var badge = $('#msg-badge');
+                var count = (res && typeof res.count !== 'undefined') ? parseInt(res.count, 10) : 0;
+                if (count > 0) {
+                    badge.text(count > 99 ? '99+' : count);
+                    badge.show();
+                } else {
+                    badge.hide();
+                }
+            });
+    }
+    if (window.jQuery) {
+        $(document).ready(function() {
+            updateMsgBadge();
+            setInterval(updateMsgBadge, 8000);
+        });
+    } else {
+        // Retry once jQuery loads
+        var checkInterval = setInterval(function() {
+            if (window.jQuery) {
+                clearInterval(checkInterval);
+                updateMsgBadge();
+                setInterval(updateMsgBadge, 8000);
+            }
+        }, 500);
+    }
+})();
+</script>
