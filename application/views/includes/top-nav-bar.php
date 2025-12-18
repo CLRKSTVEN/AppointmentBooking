@@ -5,93 +5,45 @@
         } 
     </script> -->
 
+<?php
+$role = strtolower((string) $this->session->userdata('role'));
+$displayName = trim((string) $this->session->userdata('full_name'));
+if ($displayName === '') {
+    $displayName = (string) $this->session->userdata('username');
+}
+$avatarFile = $this->session->userdata('photo') ?? $this->session->userdata('avatar') ?? 'avatar.png';
+$avatarUrl = base_url('upload/profile/' . $avatarFile);
+?>
 
            <div class="navbar-custom">
                <ul class="list-unstyled topnav-menu float-right mb-0">
-                   <?php if ($this->session->userdata('level') === 'Student'): ?>
-
-                   <?php else: ?>
-                       <li class="dropdown notification-list" id="bday-li">
-                           <a id="bdayDropdown"
-                               class="nav-link dropdown-toggle waves-effect"
-                               data-toggle="dropdown" href="#" role="button"
-                               aria-haspopup="false" aria-expanded="false">
-                               <i class="mdi mdi-cake-variant"></i>
-                               <span id="bday-badge" class="badge badge-danger noti-icon-badge" style="display:none;">0</span>
-                           </a>
-
-                           <div class="dropdown-menu dropdown-menu-right dropdown-lg">
-                               <!-- item-->
-                               <div class="dropdown-item noti-title">
-                                   <h5 class="font-16 m-0">Birthday Celebrants</h5>
-                               </div>
-
-                               <div class="slimscroll noti-scroll">
-                                   <div class="inbox-widget">
-                                       <a href="<?= base_url(); ?>Page/bdayToday" class="bday-link">
-                                           <div class="inbox-item">
-                                               <div class="inbox-item-img">
-                                                   <img src="<?= base_url(); ?>assets/images/cake.png" class="rounded-circle" alt="">
-                                               </div>
-                                               <p class="inbox-item-author">Today's</p>
-                                               <p class="inbox-item-text text-truncate">Birthday Celebrants</p>
-                                           </div>
-                                       </a>
-
-                                       <a href="<?= base_url(); ?>Page/bdayMonth" class="bday-link">
-                                           <div class="inbox-item">
-                                               <div class="inbox-item-img">
-                                                   <img src="<?= base_url(); ?>assets/images/cake.png" class="rounded-circle" alt="">
-                                               </div>
-                                               <p class="inbox-item-author">This Month's</p>
-                                               <p class="inbox-item-text text-truncate">Birthday Celebrants</p>
-                                           </div>
-                                       </a>
-                                   </div> <!-- end inbox-widget -->
-                               </div>
-                           </div>
-                       </li>
-
-                       <?php include(APPPATH . 'views/includes/appointment_bell.php'); ?>
-                   <?php endif; ?>
+                   <?php include(APPPATH . 'views/includes/appointment_bell.php'); ?>
                    <li class="dropdown notification-list">
                        <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                           <img src="<?= base_url(); ?>upload/profile/<?php echo $this->session->userdata('avatar'); ?>" alt="user-image" class="rounded-circle">
+                           <img src="<?= $avatarUrl; ?>" alt="user-image" class="rounded-circle">
                            <span class="pro-user-name ml-1">
-                               <?php echo $this->session->userdata('fname'); ?> <i class="mdi mdi-chevron-down"></i>
+                               <?= htmlentities($displayName); ?> <i class="mdi mdi-chevron-down"></i>
                            </span>
                        </a>
                        <div class="dropdown-menu dropdown-menu-right profile-dropdown ">
-                           <!-- item-->
-                           <!-- item-->
-                           <a href="<?= base_url(); ?>Page/changeDP?id=<?php echo $this->session->userdata('username'); ?>" class="dropdown-item notify-item">
+                           <a href="<?= site_url('Page/changeDP'); ?>" class="dropdown-item notify-item">
                                <i class="mdi mdi-settings-outline"></i>
                                <span>Change Profile Pic</span>
                            </a>
 
-                           <?php if ($this->session->userdata('level') === 'Student'): ?>
-                               <a href="<?= base_url(); ?>Page/studentsprofile" class="dropdown-item notify-item">
-                                   <i class="mdi mdi-account-outline"></i>
-                                   <span>My Profile</span>
-                               </a>
-                           <?php else: ?>
-                               <a href="<?= base_url(); ?>Page/staffprofile?id=<?php echo $this->session->userdata('IDNumber'); ?>" class="dropdown-item notify-item">
-                                   <i class="mdi mdi-account-outline"></i>
-                                   <span>My Profile</span>
-                               </a>
+                           <a href="<?= site_url('Page/staffprofile'); ?>" class="dropdown-item notify-item">
+                               <i class="mdi mdi-account-outline"></i>
+                               <span>My Profile</span>
+                           </a>
 
-                           <?php endif; ?>
-
-                           <!-- item-->
-                           <a href="<?= base_url(); ?>Page/lockScreen?id=<?php echo $this->session->userdata('username'); ?>" class="dropdown-item notify-item">
+                           <a href="<?= site_url('Page/lockScreen'); ?>" class="dropdown-item notify-item">
                                <i class="mdi mdi-lock-outline"></i>
                                <span>Lock Screen</span>
                            </a>
 
                            <div class="dropdown-divider"></div>
 
-                           <!-- item-->
-                           <a href="<?php echo site_url('login/logout'); ?>" class="dropdown-item notify-item">
+                           <a href="<?= site_url('login/logout'); ?>" class="dropdown-item notify-item">
                                <i class="mdi mdi-logout-variant"></i>
                                <span>Logout</span>
                            </a>

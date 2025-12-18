@@ -46,6 +46,7 @@ class Login extends CI_Controller
         }
 
         // Ensure every user has a staff profile for booking/visibility.
+        $fallbackName = null;
         if (empty($user->staff_id)) {
             $nameParts = explode('@', (string)$user->username);
             $fallbackName = ucfirst($nameParts[0] ?? 'User');
@@ -62,11 +63,26 @@ class Login extends CI_Controller
             $user->staff_id = $newStaffId;
         }
 
+        // Pull the latest staff profile to hydrate session data (name + photo)
+        $staffRow = $this->db
+            ->where('staff_id', $user->staff_id)
+            ->limit(1)
+            ->get('staff')
+            ->row();
+
+        $first = $staffRow->first_name ?? $user->first_name ?? $fallbackName ?? '';
+        $middle = $staffRow->middle_name ?? $user->middle_name ?? '';
+        $last = $staffRow->last_name ?? $user->last_name ?? '';
         $fullName = trim(
-            ($user->first_name ?? '') . ' ' .
-                ($user->middle_name ? substr($user->middle_name, 0, 1) . '. ' : '') .
-                ($user->last_name ?? '')
+            $first . ' ' .
+            ($middle !== '' ? substr($middle, 0, 1) . '. ' : '') .
+            $last
         );
+        if ($fullName === '') {
+            $fullName = $user->username;
+        }
+
+        $photoFile = ($staffRow && !empty($staffRow->photo)) ? $staffRow->photo : 'avatar.png';
 
         $sessionData = [
             'user_id'   => $user->id,
@@ -74,6 +90,9 @@ class Login extends CI_Controller
             'username'  => $user->username,
             'full_name' => $fullName,
             'role'      => $user->role,
+            'photo'     => $photoFile,
+            // Keep legacy key for header include until everything is updated.
+            'avatar'    => $photoFile,
             'logged_in' => TRUE,
         ];
 
