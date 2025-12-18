@@ -12,20 +12,128 @@
             <div class="content">
                 <div class="container-fluid">
                     <style>
+                        .messages-shell {
+                            border: 1px solid #e6eaef;
+                            border-radius: 12px;
+                            overflow: hidden;
+                            background: #f9fafc;
+                            box-shadow: 0 12px 30px rgba(24, 39, 75, 0.08);
+                        }
+
+                        .messages-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 18px 22px;
+                            border-bottom: 1px solid #e6eaef;
+                            background: linear-gradient(120deg, #ffffff 0%, #f5fbff 100%);
+                        }
+
+                        .messages-meta {
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        }
+
+                        .messages-avatar {
+                            width: 46px;
+                            height: 46px;
+                            border-radius: 12px;
+                            background: #1abc9c;
+                            color: #fff;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: 700;
+                            text-transform: uppercase;
+                            box-shadow: 0 4px 12px rgba(26, 188, 156, 0.35);
+                        }
+
+                        .badge-live {
+                            background: #e8fff5;
+                            color: #0c9a6d;
+                            border: 1px solid #c5f2dd;
+                            font-weight: 600;
+                            padding: 6px 10px;
+                            border-radius: 10px;
+                        }
+
+                        .messages-body {
+                            display: flex;
+                            flex-direction: column;
+                            min-height: 65vh;
+                            background: #f5f7fb;
+                        }
+
                         .messages-thread {
-                            background: #f7f8fa;
+                            background: linear-gradient(180deg, #f7f9fc 0%, #f1f4f9 100%);
                             overflow-y: auto;
                             flex: 1 1 auto;
-                            min-height: 360px;
-                            max-height: 65vh;
+                            padding: 18px 22px;
+                        }
+
+                        .message-row {
+                            display: flex;
+                        }
+
+                        .message-bubble {
+                            max-width: 78%;
+                            border-radius: 14px;
+                            padding: 12px 14px;
+                            box-shadow: 0 10px 26px rgba(17, 38, 146, 0.08);
+                            border: 1px solid transparent;
+                        }
+
+                        .message-bubble.theirs {
+                            background: #fff;
+                            border-color: #e7ebf1;
+                            color: #2b3241;
+                        }
+
+                        .message-bubble.mine {
+                            background: #0fb59b;
+                            color: #fff;
+                            border-color: #0fb59b;
+                        }
+
+                        .message-meta {
+                            margin-top: 6px;
+                            opacity: 0.8;
                         }
 
                         .messages-composer {
                             position: sticky;
                             bottom: 0;
                             background: #fff;
-                            padding-top: 8px;
-                            border-top: 1px solid #e1e3e8;
+                            border-top: 1px solid #e6eaef;
+                            padding: 16px 22px 18px;
+                            box-shadow: 0 -14px 28px -22px rgba(24, 39, 75, 0.4);
+                        }
+
+                        .messages-composer textarea {
+                            min-height: 96px;
+                            resize: vertical;
+                        }
+
+                        .messages-hint {
+                            color: #6c757d;
+                            font-size: 13px;
+                        }
+
+                        @media (max-width: 991px) {
+                            .messages-meta {
+                                flex-wrap: wrap;
+                            }
+
+                            .messages-header {
+                                flex-direction: column;
+                                align-items: flex-start;
+                                gap: 12px;
+                            }
+
+                            .message-bubble {
+                                max-width: 100%;
+                            }
                         }
                     </style>
                     <div class="row mt-3">
@@ -59,58 +167,75 @@
                         </div>
                     <?php endif; ?>
 
+                    <?php
+                    $withName = '';
+                    if ($with_profile) {
+                        $withName = trim(
+                            ($with_profile->first_name ?? '') . ' ' .
+                                ($with_profile->last_name ?? '')
+                        );
+                    }
+                    $initials = '';
+                    if ($withName !== '') {
+                        $parts = preg_split('/\s+/', $withName);
+                        $initials = strtoupper(substr($parts[0] ?? '', 0, 1) . substr($parts[1] ?? '', 0, 1));
+                    }
+                    ?>
+
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="card-box d-flex flex-column h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <?php
-                                        $withName = '';
-                                        if ($with_profile) {
-                                            $withName = trim(
-                                                ($with_profile->first_name ?? '') . ' ' .
-                                                    ($with_profile->last_name ?? '')
-                                            );
-                                        }
-                                        ?>
-                                        <h5 class="mb-0"><?= $withName !== '' ? htmlentities($withName) : 'Select a recipient'; ?></h5>
-                                        <div class="text-muted small">
-                                            <?= $with_profile ? htmlentities(ucfirst($with_profile->position_title ?? $with_profile->role ?? '')) : ''; ?>
+                            <div class="messages-shell">
+                                <div class="messages-header">
+                                    <div class="messages-meta">
+                                        <div class="messages-avatar"><?= htmlentities($initials ?: 'DM'); ?></div>
+                                        <div>
+                                            <h5 class="mb-0"><?= $withName !== '' ? htmlentities($withName) : 'Select a recipient'; ?></h5>
+                                            <div class="text-muted small">
+                                                <?= $with_profile ? htmlentities(ucfirst($with_profile->position_title ?? $with_profile->role ?? '')) : 'Choose who to chat with'; ?>
+                                            </div>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#recipientModal">
-                                        <?= $with_profile ? 'Change recipient' : 'Choose recipient'; ?>
-                                    </button>
+                                    <div class="d-flex align-items-center" style="gap: 10px;">
+                                        <span class="badge-live">Live • Auto updates</span>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#recipientModal">
+                                            <?= $with_profile ? 'Change recipient' : 'Choose recipient'; ?>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div id="threadPanel" class="messages-thread border rounded p-3 mb-3">
-                                    <?php if (!empty($thread)): ?>
-                                        <?php foreach ($thread as $msg): ?>
-                                            <?php $isMine = ((int)$msg->sender_staff_id === (int)$current_staff_id); ?>
-                                            <div class="d-flex <?= $isMine ? 'justify-content-end' : 'justify-content-start'; ?> mb-2">
-                                                <div class="p-2 rounded <?= $isMine ? 'bg-primary text-white' : 'bg-white'; ?> shadow-sm" style="max-width: 75%;">
-                                                    <div><?= nl2br(htmlentities($msg->body)); ?></div>
-                                                    <div class="text-muted small mt-1" style="<?= $isMine ? 'opacity:0.85;' : ''; ?>">
-                                                        <?= htmlentities(date('M d, Y h:i a', strtotime($msg->created_at))); ?>
+                                <div class="messages-body">
+                                    <div class="messages-thread" id="threadPanel">
+                                        <?php if (!empty($thread)): ?>
+                                            <?php foreach ($thread as $msg): ?>
+                                                <?php $isMine = ((int)$msg->sender_staff_id === (int)$current_staff_id); ?>
+                                                <div class="message-row <?= $isMine ? 'justify-content-end' : 'justify-content-start'; ?> mb-2">
+                                                    <div class="message-bubble <?= $isMine ? 'mine' : 'theirs'; ?>">
+                                                        <div><?= nl2br(htmlentities($msg->body)); ?></div>
+                                                        <div class="message-meta small">
+                                                            <?= htmlentities(date('M d, Y h:i a', strtotime($msg->created_at))); ?>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <div class="text-muted small">No messages yet. Start the conversation.</div>
-                                    <?php endif; ?>
-                                </div>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <div class="text-muted small">No messages yet. Start the conversation.</div>
+                                        <?php endif; ?>
+                                    </div>
 
-                                <form id="messageForm" class="messages-composer" action="<?= site_url('messages/send'); ?>" method="post">
-                                    <input type="hidden" name="receiver_staff_id" id="receiver_staff_id" value="<?= (int) $with_id; ?>">
-                                    <div class="form-group mb-2">
-                                        <label for="body">Message</label>
-                                        <textarea id="body" name="body" class="form-control" rows="3" placeholder="Type your message" <?= ($with_id <= 0) ? 'disabled' : ''; ?> required></textarea>
-                                    </div>
-                                    <div class="d-flex justify-content-end">
-                                        <button type="submit" class="btn btn-primary" id="sendBtn" <?= ($with_id <= 0) ? 'disabled' : ''; ?>>Send</button>
-                                    </div>
-                                </form>
+                                    <form id="messageForm" class="messages-composer" action="<?= site_url('messages/send'); ?>" method="post">
+                                        <input type="hidden" name="receiver_staff_id" id="receiver_staff_id" value="<?= (int) $with_id; ?>">
+                                        <div class="form-group mb-2">
+                                            <label class="d-flex justify-content-between align-items-center" for="body" style="gap: 8px;">
+                                                <span class="mb-0">Message</span>
+                                                <span class="messages-hint">Press Enter to send • Shift+Enter for new line</span>
+                                            </label>
+                                            <textarea id="body" name="body" class="form-control" rows="3" placeholder="Type your message" <?= ($with_id <= 0) ? 'disabled' : ''; ?> required></textarea>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-primary px-4" id="sendBtn" <?= ($with_id <= 0) ? 'disabled' : ''; ?>>Send</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -279,10 +404,10 @@
                         const time = msg.created_at ? new Date(msg.created_at.replace(' ', 'T')) : null;
                         const timeText = time ? time.toLocaleString() : '';
                         return `
-                        <div class="d-flex ${isMine ? 'justify-content-end' : 'justify-content-start'} mb-2">
-                            <div class="p-2 rounded ${isMine ? 'bg-primary text-white' : 'bg-white'}" style="max-width:75%;">
+                        <div class="message-row ${isMine ? 'justify-content-end' : 'justify-content-start'} mb-2">
+                            <div class="message-bubble ${isMine ? 'mine' : 'theirs'}">
                                 <div>${escapeHtml(msg.body || '')}</div>
-                                <div class="text-muted small mt-1" style="${isMine ? 'opacity:0.85;' : ''}">${escapeHtml(timeText)}</div>
+                                <div class="message-meta small">${escapeHtml(timeText)}</div>
                             </div>
                         </div>`;
                     }).join('');
@@ -292,11 +417,11 @@
                     if (!threadPanel || !msg) return;
                     const timeText = msg.created_at ? new Date(msg.created_at.replace(' ', 'T')).toLocaleString() : '';
                     const div = document.createElement('div');
-                    div.className = 'd-flex ' + (isMine ? 'justify-content-end' : 'justify-content-start') + ' mb-2';
+                    div.className = 'message-row ' + (isMine ? 'justify-content-end' : 'justify-content-start') + ' mb-2';
                     div.innerHTML = `
-                    <div class="p-2 rounded ${isMine ? 'bg-primary text-white' : 'bg-white'}" style="max-width:75%;">
+                    <div class="message-bubble ${isMine ? 'mine' : 'theirs'}">
                         <div>${escapeHtml(msg.body || '')}</div>
-                        <div class="text-muted small mt-1" style="${isMine ? 'opacity:0.85;' : ''}">${escapeHtml(timeText)}</div>
+                        <div class="message-meta small">${escapeHtml(timeText)}</div>
                     </div>`;
                     threadPanel.appendChild(div);
                 }
